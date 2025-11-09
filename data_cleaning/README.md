@@ -18,4 +18,12 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## Requirements
 
+Make sure your `.env` file in the project root contains:
+- `SUPABASE_DIRECT_CONNECTION_URL` - Your Supabase PostgreSQL connection string
+- `PROJECTS_SHEET_URL` - CSV export URL for projects data
+- `ACTIVES_SHEET_URL` - CSV export URL for actives data
+- `ATTENDANCE_URL` - CSV export URL for attendance data
+
+running all cells in `clean.ipynb` will clean the data and migrate it to the database.
