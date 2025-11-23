@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
 import {
   loadProjects,
   loadMembers,
@@ -9,19 +10,29 @@ import {
   loadAttendance,
   loadAssignments,
   calculateActiveProjects,
+  calculateTotalLifetimeProjects,
+  calculateTechToNonTechProjects,
+  calculateParticipatingMembers,
+  calculateTechToNonTechMembers,
   calculateAverageTeamSize,
-  calculateProjectsPerCompany,
-  calculateDonatedProjectsPercentage,
-  calculateTotalMembers,
-  calculateAssociatesAndAnalysts,
-  calculateActiveMembers,
-  calculateGBMAttendancePercentage,
-  calculateAverageAttendancePerGBM
+  calculateProjectsPerQuarter,
+  calculateTopProjectManagers,
+  calculateProjectsPerCompanyChart,
+  calculateTotalLifetimeMembers,
+  calculateActiveMembersCount,
+  calculateInactiveMembersCount,
+  calculateAttendancePerGBM,
+  calculateMembersPerYear,
+  calculateAssociatesVsAnalysts,
+  buildMemberNetwork,
 } from "../lib/data";
 import { Project, Member, Company, GBM, Attendance, Assignment, isSupabaseConfigured } from "../lib/supabase";
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from "recharts";
 
-const quarters = ["FA23", "FA24", "FA25", "SP23", "SP24", "SP25", "SU25", "WI24", "WI25"];
-const tabs = ["Projects", "Members", "Companies", "GBMs"];
+// Dynamically import react-force-graph to avoid SSR issues
+const ReactForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
+  ssr: false,
+});
 
 interface KPICardProps {
   title: string;
@@ -41,21 +52,7 @@ function KPICard({ title, value }: KPICardProps) {
   );
 }
 
-interface ChartPlaceholderProps {
-  title: string;
-  height?: string;
-}
-
-function ChartPlaceholder({ title, height = "h-96" }: ChartPlaceholderProps) {
-  return (
-    <div className={`bg-white border border-gray-200 rounded-lg p-6 shadow-sm ${height}`}>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-      <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg h-full flex items-center justify-center">
-        <span className="text-gray-400 text-sm">{title}</span>
-      </div>
-    </div>
-  );
-}
+const tabs = ["Projects", "Members"];
 
 export default function Home() {
   const [selectedQuarters, setSelectedQuarters] = useState<string[]>([]);
@@ -122,183 +119,7 @@ export default function Home() {
     );
   };
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "Projects":
-        const activeProjectsCount = calculateActiveProjects(projects, selectedQuarters);
-        const avgTeamSize = calculateAverageTeamSize(assignments, projects, selectedQuarters);
-        const projectsPerCompany = calculateProjectsPerCompany(projects, companies, selectedQuarters);
-        const donatedProjectsPct = calculateDonatedProjectsPercentage(projects, selectedQuarters);
-        
-        return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Projects Overview</h2>
-              
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Key Performance Indicators</h3>
-              <div className="grid grid-cols-4 gap-6 mb-8">
-                <KPICard title="Active Projects" value={loading ? "..." : activeProjectsCount} />
-                <KPICard title="Avg Team Size" value={loading ? "..." : avgTeamSize > 0 ? avgTeamSize.toFixed(1) : "N/A"} />
-                <KPICard title="Projects per Company" value={loading ? "..." : projectsPerCompany.toFixed(1)} />
-                <KPICard title="Donated Projects" value={loading ? "..." : `${donatedProjectsPct.toFixed(1)}%`} />
-              </div>
-
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <ChartPlaceholder title="Projects per Quarter" />
-                <ChartPlaceholder title="Top Project Managers" />
-              </div>
-
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Metrics</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Tech vs Non-Tech Ratio
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">-</div>
-                </div>
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Project Status Distribution
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">-</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "Members":
-        const totalMembersCount = calculateTotalMembers(members);
-        const associatesAnalystsCount = calculateAssociatesAndAnalysts(members);
-        const activeMembersCount = calculateActiveMembers(members);
-        
-        return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Members Overview</h2>
-              
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Key Performance Indicators</h3>
-              <div className="grid grid-cols-4 gap-6 mb-8">
-                <KPICard title="Total Members" value={loading ? "..." : totalMembersCount} />
-                <KPICard title="Associates & Analysts" value={loading ? "..." : associatesAnalystsCount} />
-                <KPICard title="Active Members" value={loading ? "..." : activeMembersCount} />
-                <KPICard title="Active Associates" value="-" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <ChartPlaceholder title="Members by Role" />
-                <ChartPlaceholder title="Members by Year" />
-              </div>
-
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Metrics</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Active Associates by Year
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">-</div>
-                </div>
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Recruitment Prediction
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">-</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "Companies":
-        const totalCompaniesCount = companies.length;
-        const avgProjectsPerCompany = calculateProjectsPerCompany(projects, companies, selectedQuarters);
-        const donatedPct = calculateDonatedProjectsPercentage(projects, selectedQuarters);
-        
-        return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Companies Overview</h2>
-              
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Key Performance Indicators</h3>
-              <div className="grid grid-cols-4 gap-6 mb-8">
-                <KPICard title="Total Companies" value={loading ? "..." : totalCompaniesCount} />
-                <KPICard title="Avg Projects/Company" value={loading ? "..." : avgProjectsPerCompany.toFixed(1)} />
-                <KPICard title="Donated %" value={loading ? "..." : `${donatedPct.toFixed(1)}%`} />
-                <KPICard title="Project Donated %" value="-" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <ChartPlaceholder title="Top 10 Companies by Project Count" />
-                <ChartPlaceholder title="Company Engagement Trends" />
-              </div>
-
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Metrics</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Projects per Company Distribution
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">-</div>
-                </div>
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Company Engagement Score
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">-</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "GBMs":
-        const totalGBMsCount = gbms.length;
-        const gbmAttendancePct = calculateGBMAttendancePercentage(attendance);
-        const avgAttendancePerGBM = calculateAverageAttendancePerGBM(attendance, gbms);
-        
-        return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">General Body Meetings Overview</h2>
-              
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Key Performance Indicators</h3>
-              <div className="grid grid-cols-4 gap-6 mb-8">
-                <KPICard title="Total GBMs" value={loading ? "..." : totalGBMsCount} />
-                <KPICard title="GBM Attendance" value={loading ? "..." : `${gbmAttendancePct.toFixed(1)}%`} />
-                <KPICard title="Avg Attendance/GBM" value={loading ? "..." : avgAttendancePerGBM.toFixed(1)} />
-                <KPICard title="Attendance Prediction" value="-" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <ChartPlaceholder title="GBMs per Quarter" />
-                <ChartPlaceholder title="Attendance Trend by GBM" />
-              </div>
-
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Metrics</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    % of Members Attending GBMs
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">-</div>
-                </div>
-                <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Attendance Prediction Model
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">-</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  // Get unique quarters from the data (memoized to prevent infinite loops)
+  // Get unique quarters from the data
   const availableQuarters = useMemo(() => {
     const quarters = [...new Set([
       ...projects.map(p => p.quarter_id),
@@ -312,12 +133,65 @@ export default function Home() {
     if (availableQuarters.length > 0 && !quartersInitialized && !loading) {
       setSelectedQuarters(availableQuarters);
       setQuartersInitialized(true);
-    } else if (availableQuarters.length === 0 && !quartersInitialized && !loading) {
-      // Fallback to default quarters if no data available
-      setSelectedQuarters(quarters);
-      setQuartersInitialized(true);
     }
   }, [availableQuarters, quartersInitialized, loading]);
+
+  // Projects tab calculations
+  const activeProjects = calculateActiveProjects(projects, selectedQuarters);
+  const totalLifetimeProjects = calculateTotalLifetimeProjects(projects);
+  const techNonTechProjects = calculateTechToNonTechProjects(projects, selectedQuarters);
+  const participatingMembers = calculateParticipatingMembers(assignments, projects, selectedQuarters);
+  const techNonTechMembers = calculateTechToNonTechMembers(members);
+  const avgMembersPerProject = calculateAverageTeamSize(assignments, projects, selectedQuarters);
+  const projectsPerQuarterData = calculateProjectsPerQuarter(projects, selectedQuarters);
+  const topManagersData = calculateTopProjectManagers(assignments, projects, members, selectedQuarters);
+  const projectsPerCompanyData = calculateProjectsPerCompanyChart(projects, companies, selectedQuarters);
+  const filteredProjects = useMemo(() => {
+    return projects.filter(p => selectedQuarters.includes(p.quarter_id));
+  }, [projects, selectedQuarters]);
+  const companyMap = useMemo(() => {
+    return new Map(companies.map(c => [c.company_id, c.name || 'Unknown']));
+  }, [companies]);
+
+  // Create a map of project_id to project manager names
+  const projectManagerMap = useMemo(() => {
+    const managerMap = new Map<string, string[]>();
+    const memberMap = new Map(members.map(m => [m.member_id, m.name || 'Unknown']));
+    
+    assignments.forEach(assignment => {
+      if (assignment.project_manager === true) {
+        const projectId = assignment.project_id;
+        const memberName = memberMap.get(assignment.member_id) || 'Unknown';
+        
+        if (!managerMap.has(projectId)) {
+          managerMap.set(projectId, []);
+        }
+        managerMap.get(projectId)!.push(memberName);
+      }
+    });
+    
+    return managerMap;
+  }, [assignments, members]);
+
+  // Members tab calculations
+  const totalLifetimeMembers = calculateTotalLifetimeMembers(members);
+  const activeMembers = calculateActiveMembersCount(members);
+  const inactiveMembers = calculateInactiveMembersCount(members);
+  const techNonTechMembersForTab = calculateTechToNonTechMembers(members);
+  const associatesAnalysts = calculateAssociatesVsAnalysts(members);
+  const attendancePerGBMData = calculateAttendancePerGBM(attendance, gbms, selectedQuarters);
+  const membersPerYearData = calculateMembersPerYear(members);
+  const techNonTechData = [
+    { category: "Tech", count: techNonTechMembersForTab.tech },
+    { category: "Non-Tech", count: techNonTechMembersForTab.nonTech }
+  ];
+  const associatesAnalystsData = [
+    { category: "Associates", count: associatesAnalysts.associates },
+    { category: "Analysts", count: associatesAnalysts.analysts }
+  ];
+  const networkData = useMemo(() => {
+    return buildMemberNetwork(assignments, projects, members, selectedQuarters);
+  }, [assignments, projects, members, selectedQuarters]);
 
   if (error) {
     return (
@@ -338,12 +212,507 @@ export default function Home() {
     );
   }
 
+  const renderProjectsTab = () => (
+    <>
+      {/* KPI Cards */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-8">
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">
+          Overview
+        </div>
+        <div className="grid grid-cols-3 gap-6">
+          <KPICard title="Total Projects" value={loading ? "..." : activeProjects} />
+          <KPICard 
+            title="Tech to Non-Tech Projects" 
+            value={loading ? "..." : `${techNonTechProjects.tech}:${techNonTechProjects.nonTech}`} 
+          />
+          <KPICard title="Total Lifetime Projects" value={loading ? "..." : totalLifetimeProjects} />
+          <KPICard title="Participating Members" value={loading ? "..." : participatingMembers} />
+          <KPICard 
+            title="Tech to Non-Tech Members" 
+            value={loading ? "..." : `${techNonTechMembers.tech}:${techNonTechMembers.nonTech}`} 
+          />
+          <KPICard 
+            title="Average Members per Active Project" 
+            value={loading ? "..." : avgMembersPerProject > 0 ? avgMembersPerProject.toFixed(1) : "0"} 
+          />
+        </div>
+      </div>
+
+      {/* Charts Section */}
+      <div className="space-y-6 mb-8">
+        {/* Projects per Quarter Line Chart */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Projects per Quarter</h3>
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={projectsPerQuarterData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis 
+                dataKey="quarter" 
+                stroke="#64748b"
+                tick={{ fill: '#64748b' }}
+              />
+              <YAxis 
+                stroke="#64748b"
+                tick={{ fill: '#64748b' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#fff', 
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px'
+                }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="count" 
+                stroke="#87CEEB" 
+                strokeWidth={2}
+                dot={{ fill: '#87CEEB', r: 4 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Two Bar Charts Side by Side */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* Top Project Managers */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Project Managers</h3>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart 
+                data={topManagersData}
+                layout="vertical"
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis 
+                  type="number"
+                  stroke="#64748b"
+                  tick={{ fill: '#64748b' }}
+                />
+                <YAxis 
+                  type="category"
+                  dataKey="manager"
+                  width={120}
+                  stroke="#64748b"
+                  tick={{ fill: '#64748b', fontSize: 12 }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#fff', 
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Bar 
+                  dataKey="count" 
+                  fill="#2D3748"
+                  radius={[0, 4, 4, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Projects per Company */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Projects per Company</h3>
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart 
+                data={projectsPerCompanyData}
+                layout="vertical"
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis 
+                  type="number"
+                  stroke="#64748b"
+                  tick={{ fill: '#64748b' }}
+                />
+                <YAxis 
+                  type="category"
+                  dataKey="company"
+                  width={120}
+                  stroke="#64748b"
+                  tick={{ fill: '#64748b', fontSize: 12 }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#fff', 
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Bar 
+                  dataKey="count" 
+                  fill="#2D3748"
+                  radius={[0, 4, 4, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Projects Database Table */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Projects Database</h3>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Company
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Quarter
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  PM
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Donated
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Description
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                    Loading...
+                  </td>
+                </tr>
+              ) : filteredProjects.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                    No projects found for selected quarters
+                  </td>
+                </tr>
+              ) : (
+                filteredProjects.map((project) => (
+                  <tr key={project.project_id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {companyMap.get(project.company_id || '') || 'Unknown'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {project.quarter_id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {projectManagerMap.get(project.project_id)?.join(', ') || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {project.dnf ? 'DNF' : project.status || 'Ongoing'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {project.donated ? 'Yes' : 'No'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900 max-w-md truncate">
+                      {project.description || 'N/A'}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+
+  const renderMembersTab = () => (
+    <>
+      {/* KPI Cards */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-8">
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">
+          Overview
+        </div>
+        <div className="grid grid-cols-4 gap-6">
+          <KPICard title="Current Members" value={loading ? "..." : activeMembers + inactiveMembers} />
+          <KPICard title="Active" value={loading ? "..." : activeMembers} />
+          <KPICard title="Inactive" value={loading ? "..." : inactiveMembers} />
+          <KPICard title="Total Lifetime Members" value={loading ? "..." : totalLifetimeMembers} />
+        </div>
+      </div>
+
+      {/* Charts Section - 2x2 Grid */}
+      <div className="grid grid-cols-2 gap-6 mb-8">
+        {/* Attendance per GBM */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Attendance per GBM</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={attendancePerGBMData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis 
+                dataKey="date" 
+                stroke="#64748b"
+                tick={{ fill: '#64748b', fontSize: 12 }}
+                angle={-45}
+                textAnchor="end"
+                height={80}
+              />
+              <YAxis 
+                stroke="#64748b"
+                tick={{ fill: '#64748b' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#fff', 
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px'
+                }}
+              />
+              <Bar dataKey="attendance" fill="#87CEEB" />
+              <Line 
+                type="monotone" 
+                dataKey="attendance" 
+                stroke="#2D3748" 
+                strokeWidth={2}
+                dot={{ fill: '#2D3748', r: 4 }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Members per Year */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Members per Year</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={membersPerYearData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis 
+                dataKey="year" 
+                stroke="#64748b"
+                tick={{ fill: '#64748b' }}
+              />
+              <YAxis 
+                stroke="#64748b"
+                tick={{ fill: '#64748b' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#fff', 
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px'
+                }}
+              />
+              <Bar dataKey="count" fill="#87CEEB" />
+              <Line 
+                type="monotone" 
+                dataKey="count" 
+                stroke="#2D3748" 
+                strokeWidth={2}
+                dot={{ fill: '#2D3748', r: 4 }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Tech vs Non-Tech */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tech vs Non-Tech</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart 
+              data={techNonTechData}
+              layout="vertical"
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis 
+                type="number"
+                stroke="#64748b"
+                tick={{ fill: '#64748b' }}
+              />
+              <YAxis 
+                type="category"
+                dataKey="category"
+                stroke="#64748b"
+                tick={{ fill: '#64748b' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#fff', 
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px'
+                }}
+              />
+              <Bar 
+                dataKey="count" 
+                fill="#2D3748"
+                radius={[0, 4, 4, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Associates vs Analysts */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Associates vs Analysts</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart 
+              data={associatesAnalystsData}
+              layout="vertical"
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis 
+                type="number"
+                stroke="#64748b"
+                tick={{ fill: '#64748b' }}
+              />
+              <YAxis 
+                type="category"
+                dataKey="category"
+                stroke="#64748b"
+                tick={{ fill: '#64748b' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: '#fff', 
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px'
+                }}
+              />
+              <Bar 
+                dataKey="count" 
+                fill="#2D3748"
+                radius={[0, 4, 4, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Member Relations */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Member Relations
+          <span className="ml-4 text-sm font-normal text-gray-500">
+            ({networkData.nodes.length} members, {networkData.links.length} connections)
+          </span>
+        </h3>
+        <div className="h-96 border border-gray-200 rounded-lg overflow-hidden bg-gray-50 relative w-full" id="network-container">
+          {networkData.nodes.length > 0 && networkData.links.length > 0 ? (
+            <ReactForceGraph2D
+              graphData={networkData}
+              nodeLabel={(node: any) => `${node.name}`}
+              nodeColor={() => "#87CEEB"}
+              linkColor={() => "#2D3748"}
+              linkWidth={(link: any) => Math.sqrt(link.value || 1) * 3}
+              nodeVal={(node: any) => 12}
+              nodeRelSize={8}
+              linkDirectionalArrowLength={4}
+              linkDirectionalArrowRelPos={1}
+              cooldownTicks={100}
+              onEngineStop={() => {}}
+              nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+                const label = node.name || '';
+                const fontSize = Math.max(11, 16 / Math.sqrt(globalScale));
+                ctx.font = `bold ${fontSize}px Sans-Serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#2D3748';
+                ctx.fillText(label, node.x || 0, node.y || 0);
+              }}
+            />
+          ) : networkData.nodes.length > 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-gray-400">
+              <p>No connections found between members for selected quarters</p>
+              <p className="text-sm mt-2">Found {networkData.nodes.length} members but no shared projects</p>
+            </div>
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center text-gray-400">
+              <p>{loading ? "Loading network..." : "No members found for selected quarters"}</p>
+              {!loading && (
+                <p className="text-sm mt-2">
+                  Assignments: {assignments.length}, Projects: {projects.filter(p => selectedQuarters.includes(p.quarter_id)).length}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Members Database Table */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Members Database</h3>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Year
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    Loading...
+                  </td>
+                </tr>
+              ) : members.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    No members found
+                  </td>
+                </tr>
+              ) : (
+                members.map((member) => (
+                  <tr key={member.member_id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {member.name || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {member.year || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {member.role || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {member.email || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        member.status 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {member.status ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">TCG Dashboard</h1>
+          <div className="flex items-center gap-4 mb-2">
+            <img src="/logo.png" alt="TCG Logo" className="h-12 w-12 object-contain" />
+            <h1 className="text-4xl font-bold text-gray-900">TCG Dashboard</h1>
+          </div>
           {loading && (
             <div className="text-sm text-gray-500 flex items-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
@@ -365,12 +734,12 @@ export default function Home() {
             Filters
           </h3>
           
-          <div className="mb-6">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Select Quarters
+              Quarters
             </label>
             <div className="flex flex-wrap gap-2">
-              {(quartersInitialized && availableQuarters.length > 0 ? availableQuarters : quarters).map((quarter) => (
+              {availableQuarters.map((quarter) => (
                 <button
                   key={quarter}
                   onClick={() => toggleQuarter(quarter)}
@@ -381,6 +750,7 @@ export default function Home() {
                       : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50"
                   }`}
                 >
+                  {selectedQuarters.includes(quarter) && "+ "}
                   {quarter}
                   {selectedQuarters.includes(quarter) && (
                     <span className="ml-1 text-gray-500">×</span>
@@ -409,7 +779,8 @@ export default function Home() {
         </div>
 
         {/* Tab Content */}
-        {renderTabContent()}
+        {activeTab === "Projects" && renderProjectsTab()}
+        {activeTab === "Members" && renderMembersTab()}
       </div>
     </div>
   );

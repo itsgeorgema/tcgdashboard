@@ -21,6 +21,10 @@ export interface Project {
   donated?: boolean
   company_id?: string
   name?: string
+  description?: string
+  dnf?: boolean
+  nda?: boolean
+  status?: string
 }
 
 export interface Member {
@@ -29,6 +33,7 @@ export interface Member {
   status?: boolean
   year?: string
   name?: string
+  email?: string
 }
 
 export interface Company {
@@ -50,7 +55,8 @@ export interface Attendance {
 }
 
 export interface Assignment {
-  assignment_id: string
+  assignment_id?: string
   project_id: string
   member_id: string
+  project_manager?: boolean
 }
