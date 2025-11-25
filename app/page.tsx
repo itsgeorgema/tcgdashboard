@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import {
   loadProjects,
@@ -25,36 +24,9 @@ import {
   calculateAttendancePerGBM,
   calculateMembersPerYear,
   calculateAssociatesVsAnalysts,
-  buildMemberNetwork,
 } from "../lib/data";
 import { Project, Member, Company, GBM, Attendance, Assignment, isSupabaseConfigured } from "../lib/supabase";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from "recharts";
-
-// Types for force graph - extends what react-force-graph-2d expects
-interface GraphNode {
-  [key: string]: unknown; // Allow additional properties that the library may add
-  id: string;
-  name: string;
-  group: number;
-  x?: number;
-  y?: number;
-  vx?: number;
-  vy?: number;
-  fx?: number;
-  fy?: number;
-}
-
-interface GraphLink {
-  [key: string]: unknown; // Allow additional properties that the library may add
-  source: string | GraphNode;
-  target: string | GraphNode;
-  value: number;
-}
-
-// Dynamically import react-force-graph to avoid SSR issues
-const ReactForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
-  ssr: false,
-});
 
 interface KPICardProps {
   title: string;
@@ -211,9 +183,6 @@ export default function Home() {
     { category: "Associates", count: associatesAnalysts.associates },
     { category: "Analysts", count: associatesAnalysts.analysts }
   ];
-  const networkData = useMemo(() => {
-    return buildMemberNetwork(assignments, projects, members, selectedQuarters);
-  }, [assignments, projects, members, selectedQuarters]);
 
   if (error) {
     return (
@@ -602,64 +571,6 @@ export default function Home() {
               />
             </BarChart>
           </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Member Relations */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Member Relations
-          <span className="ml-4 text-sm font-normal text-gray-500">
-            ({networkData.nodes.length} members, {networkData.links.length} connections)
-          </span>
-        </h3>
-        <div className="h-96 border border-gray-200 rounded-lg overflow-hidden bg-gray-50 relative w-full" id="network-container">
-          {networkData.nodes.length > 0 && networkData.links.length > 0 ? (
-            <ReactForceGraph2D
-              graphData={networkData}
-              nodeLabel={(node) => {
-                const graphNode = node as unknown as GraphNode;
-                return `${graphNode.name}`;
-              }}
-              nodeColor={() => "#87CEEB"}
-              linkColor={() => "#2D3748"}
-              linkWidth={(link) => {
-                const graphLink = link as unknown as GraphLink;
-                const val = typeof graphLink.value === 'number' ? graphLink.value : 1;
-                return Math.sqrt(val) * 3;
-              }}
-              nodeVal={() => 12}
-              nodeRelSize={8}
-              linkDirectionalArrowLength={4}
-              linkDirectionalArrowRelPos={1}
-              cooldownTicks={100}
-              onEngineStop={() => {}}
-              nodeCanvasObject={(node, ctx: CanvasRenderingContext2D, globalScale: number) => {
-                const graphNode = node as unknown as GraphNode;
-                const label = graphNode.name || '';
-                const fontSize = Math.max(11, 16 / Math.sqrt(globalScale));
-                ctx.font = `bold ${fontSize}px Sans-Serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = '#2D3748';
-                ctx.fillText(label, graphNode.x || 0, graphNode.y || 0);
-              }}
-            />
-          ) : networkData.nodes.length > 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400">
-              <p>No connections found between members for selected quarters</p>
-              <p className="text-sm mt-2">Found {networkData.nodes.length} members but no shared projects</p>
-            </div>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400">
-              <p>{loading ? "Loading network..." : "No members found for selected quarters"}</p>
-              {!loading && (
-                <p className="text-sm mt-2">
-                  Assignments: {assignments.length}, Projects: {projects.filter(p => selectedQuarters.includes(p.quarter_id)).length}
-                </p>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
