@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import {
   loadProjects,
   loadMembers,
@@ -28,6 +29,27 @@ import {
 } from "../lib/data";
 import { Project, Member, Company, GBM, Attendance, Assignment, isSupabaseConfigured } from "../lib/supabase";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from "recharts";
+
+// Types for force graph - extends what react-force-graph-2d expects
+interface GraphNode {
+  [key: string]: unknown; // Allow additional properties that the library may add
+  id: string;
+  name: string;
+  group: number;
+  x?: number;
+  y?: number;
+  vx?: number;
+  vy?: number;
+  fx?: number;
+  fy?: number;
+}
+
+interface GraphLink {
+  [key: string]: unknown; // Allow additional properties that the library may add
+  source: string | GraphNode;
+  target: string | GraphNode;
+  value: number;
+}
 
 // Dynamically import react-force-graph to avoid SSR issues
 const ReactForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
@@ -595,24 +617,32 @@ export default function Home() {
           {networkData.nodes.length > 0 && networkData.links.length > 0 ? (
             <ReactForceGraph2D
               graphData={networkData}
-              nodeLabel={(node: any) => `${node.name}`}
+              nodeLabel={(node) => {
+                const graphNode = node as unknown as GraphNode;
+                return `${graphNode.name}`;
+              }}
               nodeColor={() => "#87CEEB"}
               linkColor={() => "#2D3748"}
-              linkWidth={(link: any) => Math.sqrt(link.value || 1) * 3}
-              nodeVal={(node: any) => 12}
+              linkWidth={(link) => {
+                const graphLink = link as unknown as GraphLink;
+                const val = typeof graphLink.value === 'number' ? graphLink.value : 1;
+                return Math.sqrt(val) * 3;
+              }}
+              nodeVal={() => 12}
               nodeRelSize={8}
               linkDirectionalArrowLength={4}
               linkDirectionalArrowRelPos={1}
               cooldownTicks={100}
               onEngineStop={() => {}}
-              nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
-                const label = node.name || '';
+              nodeCanvasObject={(node, ctx: CanvasRenderingContext2D, globalScale: number) => {
+                const graphNode = node as unknown as GraphNode;
+                const label = graphNode.name || '';
                 const fontSize = Math.max(11, 16 / Math.sqrt(globalScale));
                 ctx.font = `bold ${fontSize}px Sans-Serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillStyle = '#2D3748';
-                ctx.fillText(label, node.x || 0, node.y || 0);
+                ctx.fillText(label, graphNode.x || 0, graphNode.y || 0);
               }}
             />
           ) : networkData.nodes.length > 0 ? (
@@ -710,7 +740,7 @@ export default function Home() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-2">
-            <img src="/logo.png" alt="TCG Logo" className="h-12 w-12 object-contain" />
+            <Image src="/logo.png" alt="TCG Logo" width={48} height={48} className="object-contain" />
             <h1 className="text-4xl font-bold text-gray-900">TCG Dashboard</h1>
           </div>
           {loading && (
@@ -744,7 +774,7 @@ export default function Home() {
                   key={quarter}
                   onClick={() => toggleQuarter(quarter)}
                   disabled={loading}
-                  className={`px-3 py-1 text-sm rounded-md border transition-colors disabled:opacity-50 ${
+                  className={`px-3 py-1 text-sm cursor-pointer rounded-md border transition-colors disabled:opacity-50 ${
                     selectedQuarters.includes(quarter)
                       ? "bg-gray-100 border-gray-300 text-gray-900"
                       : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -767,7 +797,7 @@ export default function Home() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 rounded-md font-medium transition-colors ${
+              className={`px-6 py-3 rounded-md cursor-pointer font-medium transition-colors ${
                 activeTab === tab
                   ? "bg-white text-gray-900 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
