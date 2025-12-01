@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import dynamic from "next/dynamic";
 import {
   loadProjects,
   loadMembers,
   loadGBMs,
   loadAttendance,
-  loadAssignments,
   calculateTotalLifetimeMembers,
   calculateActiveMembersCount,
   calculateInactiveMembersCount,
@@ -15,15 +13,9 @@ import {
   calculateAttendancePerGBM,
   calculateNewMembersPerQuarter,
   calculateAssociatesVsAnalysts,
-  buildMemberNetwork,
 } from "../../lib/data";
-import { Project, Member, GBM, Attendance, Assignment, isSupabaseConfigured } from "../../lib/supabase";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from "recharts";
-
-// Dynamically import react-force-graph to avoid SSR issues
-const ReactForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
-  ssr: false,
-});
+import { Project, Member, GBM, Attendance, isSupabaseConfigured } from "../../lib/supabase";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart, Line } from "recharts";
 
 interface KPICardProps {
   title: string;
@@ -52,7 +44,6 @@ export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [gbms, setGBMs] = useState<GBM[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
   
   // Loading state
   const [loading, setLoading] = useState(true);
@@ -69,21 +60,18 @@ export default function MembersPage() {
           projectsData,
           membersData,
           gbmsData,
-          attendanceData,
-          assignmentsData
+          attendanceData
         ] = await Promise.all([
           loadProjects(),
           loadMembers(),
           loadGBMs(),
-          loadAttendance(),
-          loadAssignments()
+          loadAttendance()
         ]);
         
         setProjects(projectsData);
         setMembers(membersData);
         setGBMs(gbmsData);
         setAttendance(attendanceData);
-        setAssignments(assignmentsData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred while loading data');
         console.error('Error loading data:', err);
@@ -138,11 +126,6 @@ export default function MembersPage() {
     { category: "Associates", count: associatesAnalysts.associates },
     { category: "Analysts", count: associatesAnalysts.analysts }
   ];
-
-  // Network graph data
-  const networkData = useMemo(() => {
-    return buildMemberNetwork(assignments, projects, members, selectedQuarters);
-  }, [assignments, projects, members, selectedQuarters]);
 
   if (error) {
     return (
@@ -385,29 +368,6 @@ export default function MembersPage() {
           </div>
         </div>
 
-        {/* Member Relation Visualizer */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Member Relation Visualizer</h3>
-          <div className="h-96 border border-gray-200 rounded-lg overflow-hidden">
-            {networkData.nodes.length > 0 ? (
-              <ReactForceGraph2D
-                graphData={networkData}
-                nodeLabel={(node: any) => node.name}
-                nodeColor={() => "#8b5cf6"}
-                linkColor={() => "#64748b"}
-                linkWidth={(link: any) => Math.sqrt(link.value)}
-                nodeVal={(node: any) => 10}
-                cooldownTicks={100}
-                onEngineStop={() => {}}
-              />
-            ) : (
-              <div className="h-full flex items-center justify-center text-gray-400">
-                {loading ? "Loading network..." : "No member connections found for selected quarters"}
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* Members Database Table */}
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Members Database</h3>
@@ -483,4 +443,3 @@ export default function MembersPage() {
     </div>
   );
 }
-

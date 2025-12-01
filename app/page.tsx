@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
-import dynamic from "next/dynamic";
+import { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import {
   loadProjects,
   loadMembers,
@@ -24,15 +24,9 @@ import {
   calculateAttendancePerGBM,
   calculateNewMembersPerQuarter,
   calculateAssociatesVsAnalysts,
-  buildMemberNetwork,
 } from "../lib/data";
 import { Project, Member, Company, GBM, Attendance, Assignment, isSupabaseConfigured } from "../lib/supabase";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ComposedChart } from "recharts";
-
-// Dynamically import react-force-graph to avoid SSR issues
-const ReactForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
-  ssr: false,
-});
 
 interface KPICardProps {
   title: string;
@@ -198,9 +192,6 @@ export default function Home() {
     { category: "Associates", count: associatesAnalysts.associates },
     { category: "Analysts", count: associatesAnalysts.analysts }
   ];
-  const networkData = useMemo(() => {
-    return buildMemberNetwork(assignments, projects, members, selectedQuarters);
-  }, [assignments, projects, members, selectedQuarters]);
 
   if (error) {
     return (
@@ -592,56 +583,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Member Relations */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Member Relations
-          <span className="ml-4 text-sm font-normal text-gray-500">
-            ({networkData.nodes.length} members, {networkData.links.length} connections)
-          </span>
-        </h3>
-        <div className="h-96 border border-gray-200 rounded-lg overflow-hidden bg-gray-50 relative w-full" id="network-container">
-          {networkData.nodes.length > 0 && networkData.links.length > 0 ? (
-            <ReactForceGraph2D
-              graphData={networkData}
-              nodeLabel={(node: any) => `${node.name}`}
-              nodeColor={() => "#87CEEB"}
-              linkColor={() => "#2D3748"}
-              linkWidth={(link: any) => Math.sqrt(link.value || 1) * 3}
-              nodeVal={(node: any) => 12}
-              nodeRelSize={8}
-              linkDirectionalArrowLength={4}
-              linkDirectionalArrowRelPos={1}
-              cooldownTicks={100}
-              onEngineStop={() => {}}
-              nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
-                const label = node.name || '';
-                const fontSize = Math.max(11, 16 / Math.sqrt(globalScale));
-                ctx.font = `bold ${fontSize}px Sans-Serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = '#2D3748';
-                ctx.fillText(label, node.x || 0, node.y || 0);
-              }}
-            />
-          ) : networkData.nodes.length > 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400">
-              <p>No connections found between members for selected quarters</p>
-              <p className="text-sm mt-2">Found {networkData.nodes.length} members but no shared projects</p>
-            </div>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400">
-              <p>{loading ? "Loading network..." : "No members found for selected quarters"}</p>
-              {!loading && (
-                <p className="text-sm mt-2">
-                  Assignments: {assignments.length}, Projects: {projects.filter(p => selectedQuarters.includes(p.quarter_id)).length}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Members Database Table */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Members Database</h3>
@@ -719,7 +660,7 @@ export default function Home() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-2">
-            <img src="/logo.png" alt="TCG Logo" className="h-12 w-12 object-contain" />
+            <Image src="/logo.png" alt="TCG Logo" width={48} height={48} className="object-contain" />
             <h1 className="text-4xl font-bold text-gray-900">TCG Dashboard</h1>
           </div>
           {loading && (
@@ -753,7 +694,7 @@ export default function Home() {
                   key={quarter}
                   onClick={() => toggleQuarter(quarter)}
                   disabled={loading}
-                  className={`px-3 py-1 text-sm rounded-md border transition-colors disabled:opacity-50 ${
+                  className={`px-3 py-1 text-sm cursor-pointer rounded-md border transition-colors disabled:opacity-50 ${
                     selectedQuarters.includes(quarter)
                       ? "bg-gray-100 border-gray-300 text-gray-900"
                       : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -776,7 +717,7 @@ export default function Home() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 rounded-md font-medium transition-colors ${
+              className={`px-6 py-3 rounded-md cursor-pointer font-medium transition-colors ${
                 activeTab === tab
                   ? "bg-white text-gray-900 shadow-sm"
                   : "text-gray-600 hover:text-gray-900"
