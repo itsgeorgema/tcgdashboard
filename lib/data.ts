@@ -130,7 +130,21 @@ export async function loadAssignments(): Promise<Assignment[]> {
       return []
     }
     
-    return data || []
+    // Ensure proper type conversion
+    const assignments = (data || []).map(row => ({
+      assignment_id: row.assignment_id,
+      project_id: Number(row.project_id),
+      member_id: Number(row.member_id),
+      project_manager: Boolean(row.project_manager)
+    }))
+    
+    console.log('Loaded assignments:', {
+      total: assignments.length,
+      withPM: assignments.filter(a => a.project_manager === true).length,
+      sample: assignments.slice(0, 3)
+    })
+    
+    return assignments
   } catch (error) {
     console.error('Error loading assignments:', error)
     return []
@@ -210,18 +224,13 @@ export function calculateTotalLifetimeProjects(projects: Project[]): number {
 export function calculateTechToNonTechProjects(projects: Project[], selectedQuarters: string[]): { tech: number; nonTech: number } {
   const filteredProjects = projects.filter(p => selectedQuarters.includes(p.quarter_id))
   
-  // Heuristic: Check if description contains tech-related keywords
-  const techKeywords = ['tech', 'software', 'ai', 'ml', 'data', 'algorithm', 'code', 'development', 'engineering', 'platform', 'api', 'system']
-  
   let techCount = 0
   let nonTechCount = 0
   
   filteredProjects.forEach(project => {
-    const description = (project.description || '').toLowerCase()
-    const name = (project.name || '').toLowerCase()
-    const isTech = techKeywords.some(keyword => description.includes(keyword) || name.includes(keyword))
+    const track = (project.track || '').trim().toLowerCase()
     
-    if (isTech) {
+    if (track === 'tech') {
       techCount++
     } else {
       nonTechCount++
@@ -232,13 +241,7 @@ export function calculateTechToNonTechProjects(projects: Project[], selectedQuar
 }
 
 export function calculateParticipatingMembers(assignments: Assignment[], projects: Project[], selectedQuarters: string[]): number {
-  const filteredProjects = projects.filter(p => selectedQuarters.includes(p.quarter_id))
-  const projectIds = filteredProjects.map(p => p.project_id)
-  const uniqueMemberIds = new Set(
-    assignments
-      .filter(a => projectIds.includes(a.project_id))
-      .map(a => a.member_id)
-  )
+  const uniqueMemberIds = new Set(assignments.map(a => a.member_id))
   return uniqueMemberIds.size
 }
 
@@ -264,6 +267,9 @@ export function calculateTechToNonTechMembers(
 
 
 export function calculateProjectsPerQuarter(projects: Project[], selectedQuarters: string[]): { quarter: string; count: number }[] {
+  // Define all quarters to display
+  const allQuarters = ['SU23', 'FA23', 'WI24', 'SP24', 'SU24', 'FA24', 'WI25', 'SP25', 'SU25', 'FA25']
+  
   const filteredProjects = projects.filter(p => selectedQuarters.includes(p.quarter_id))
   const quarterCounts: { [key: string]: number } = {}
   
@@ -272,23 +278,24 @@ export function calculateProjectsPerQuarter(projects: Project[], selectedQuarter
     quarterCounts[quarter] = (quarterCounts[quarter] || 0) + 1
   })
   
-  return selectedQuarters.map(quarter => ({
+  // Return all quarters in chronological order with their counts (0 if no projects)
+  return allQuarters.map(quarter => ({
     quarter,
     count: quarterCounts[quarter] || 0
-  })).sort((a, b) => a.quarter.localeCompare(b.quarter))
+  }))
 }
 
 export function calculateTopProjectManagers(assignments: Assignment[], projects: Project[], members: Member[], selectedQuarters: string[]): { manager: string; count: number }[] {
   const filteredProjects = projects.filter(p => selectedQuarters.includes(p.quarter_id))
   const projectIds = new Set(filteredProjects.map(p => p.project_id))
-  const memberMap = new Map<string, string>(
-    members.map(m => [String(m.member_id), m.name || 'Unknown'])
+  const memberMap = new Map<number, string>(
+    members.map(m => [m.member_id, m.name || 'Unknown'])
   )
-    const managerCounts: { [key: string]: number } = {}
+  const managerCounts: { [key: string]: number } = {}
   
   assignments.forEach(assignment => {
     if (assignment.project_manager === true && projectIds.has(assignment.project_id)) {
-      const managerName = memberMap.get(String(assignment.member_id)) || 'Unknown'
+      const managerName = memberMap.get(assignment.member_id) || 'Unknown'
       managerCounts[managerName] = (managerCounts[managerName] || 0) + 1
     }
   })
@@ -305,7 +312,9 @@ export function calculateProjectsPerCompanyChart(projects: Project[], companies:
   const companyCounts: { [key: string]: number } = {}
   
   filteredProjects.forEach(project => {
-    const companyName = companyMap.get(project.company_id || '') || 'Unknown'
+    const companyName = project.company_id !== undefined 
+      ? (companyMap.get(project.company_id) || 'Unknown')
+      : 'Unknown'
     companyCounts[companyName] = (companyCounts[companyName] || 0) + 1
   })
   
@@ -335,9 +344,21 @@ export function calculateAttendancePerGBM(attendance: Attendance[], gbms: GBM[],
     const attendedCount = attendance.filter(a => 
       a.gbm_id === gbm.gbm_id && a.status === true
     ).length
+    
+    // Format date to only show date portion (YYYY-MM-DD), not time
+    let formattedDate = gbm.gbm_id
+    if (gbm.date) {
+      try {
+        const dateObj = new Date(gbm.date)
+        formattedDate = dateObj.toISOString().split('T')[0]
+      } catch {
+        formattedDate = gbm.date.split(' ')[0] || gbm.date
+      }
+    }
+    
     return {
       gbm_id: gbm.gbm_id,
-      date: gbm.date || gbm.gbm_id,
+      date: formattedDate,
       attendance: attendedCount
     }
   }).sort((a, b) => a.date.localeCompare(b.date))
@@ -408,6 +429,65 @@ export function calculateAssociatesVsAnalysts(members: Member[]): { associates: 
   })
   
   return { associates, analysts }
+}
+
+export function getProjectManagers(assignments: Assignment[], projects: Project[], members: Member[]): Map<number, string[]> {
+  // Create a map of project_id to project manager names
+  // This follows the merge logic: projects + assignments (on project_id) + members (on member_id)
+  // where assignment.project_manager === true
+  
+  const managerMap = new Map<number, string[]>()
+  
+  // Create a member lookup map (member_id -> name)
+  const memberMap = new Map<number, string>()
+  members.forEach(member => {
+    memberMap.set(member.member_id, member.name || 'Unknown')
+  })
+  
+  // Create a set of valid project IDs
+  const projectIds = new Set(projects.map(p => p.project_id))
+  
+  // Debug logging
+  console.log('getProjectManagers debug:', {
+    totalAssignments: assignments.length,
+    totalMembers: members.length,
+    totalProjects: projects.length,
+    pmAssignments: assignments.filter(a => a.project_manager === true).length,
+    sampleAssignment: assignments[0],
+    sampleMember: members[0],
+    sampleProject: projects[0]
+  })
+  
+  // Iterate through assignments and find project managers
+  assignments.forEach(assignment => {
+    // Check if this assignment is for a project manager
+    if (assignment.project_manager === true) {
+      const projectId = assignment.project_id
+      const memberId = assignment.member_id
+      
+      // Only include if the project exists
+      if (projectIds.has(projectId)) {
+        const memberName = memberMap.get(memberId)
+        
+        if (memberName) {
+          if (!managerMap.has(projectId)) {
+            managerMap.set(projectId, [])
+          }
+          managerMap.get(projectId)!.push(memberName)
+          console.log(`Found PM: ${memberName} for project ${projectId}`)
+        } else {
+          console.log(`No member found for member_id: ${memberId}`)
+        }
+      } else {
+        console.log(`Project ${projectId} not in valid project IDs`)
+      }
+    }
+  })
+  
+  console.log('Total PMs found:', managerMap.size)
+  console.log('PM Map:', Array.from(managerMap.entries()))
+  
+  return managerMap
 }
 
 export function buildMemberNetwork(assignments: Assignment[], projects: Project[], members: Member[], selectedQuarters: string[]): { nodes: Array<{ id: string; name: string; group: number }>; links: Array<{ source: string; target: string; value: number }> } {

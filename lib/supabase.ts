@@ -15,16 +15,17 @@ export const isSupabaseConfigured = () => {
 
 // Database types based on your schema
 export interface Project {
-  project_id: string
+  project_id: number
   quarter_id: string
   project_manager?: string
   donated?: boolean
-  company_id?: string
+  company_id?: number
   name?: string
   description?: string
   dnf?: boolean
   nda?: boolean
   status?: string
+  track?: string
 }
 
 export interface Member {
@@ -42,7 +43,7 @@ export interface Member {
 
 
 export interface Company {
-  company_id: string
+  company_id: number
   name?: string
 }
 
@@ -61,7 +62,7 @@ export interface Attendance {
 
 export interface Assignment {
   assignment_id?: string
-  project_id: string
-  member_id: string
-  project_manager?: boolean
+  project_id: number
+  member_id: number
+  project_manager: boolean
 }
