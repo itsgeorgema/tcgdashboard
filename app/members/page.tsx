@@ -13,7 +13,7 @@ import {
   calculateInactiveMembersCount,
   calculateTechToNonTechMembers,
   calculateAttendancePerGBM,
-  calculateMembersPerYear,
+  calculateNewMembersPerQuarter,
   calculateAssociatesVsAnalysts,
   buildMemberNetwork,
 } from "../../lib/data";
@@ -129,7 +129,7 @@ export default function MembersPage() {
   
   // Chart data
   const attendancePerGBMData = calculateAttendancePerGBM(attendance, gbms, selectedQuarters);
-  const membersPerYearData = calculateMembersPerYear(members);
+  const membersPerYearData = calculateNewMembersPerQuarter(members);
   const techNonTechData = [
     { category: "Tech", count: techNonTechMembers.tech },
     { category: "Non-Tech", count: techNonTechMembers.nonTech }
@@ -452,13 +452,16 @@ export default function MembersPage() {
                         {member.name || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {member.year || 'N/A'}
+                        {member.quarter_entered || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {member.role || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {member.email || 'N/A'}
+                        {member.ucsd_email || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {member.personal_email || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${

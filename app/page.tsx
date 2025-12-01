@@ -22,7 +22,7 @@ import {
   calculateActiveMembersCount,
   calculateInactiveMembersCount,
   calculateAttendancePerGBM,
-  calculateMembersPerYear,
+  calculateNewMembersPerQuarter,
   calculateAssociatesVsAnalysts,
   buildMemberNetwork,
 } from "../lib/data";
@@ -156,22 +156,31 @@ export default function Home() {
   // Create a map of project_id to project manager names
   const projectManagerMap = useMemo(() => {
     const managerMap = new Map<string, string[]>();
-    const memberMap = new Map(members.map(m => [m.member_id, m.name || 'Unknown']));
-    
+
+    // Normalize member_id keys to strings
+    const memberMap = new Map(
+      members.map(m => [String(m.member_id), m.name || 'Unknown'])
+    );
+
     assignments.forEach(assignment => {
       if (assignment.project_manager === true) {
-        const projectId = assignment.project_id;
-        const memberName = memberMap.get(assignment.member_id) || 'Unknown';
-        
+
+        // Normalize IDs to strings
+        const projectId = String(assignment.project_id);
+        const memberId = String(assignment.member_id);
+
+        const memberName = memberMap.get(memberId) || 'Unknown';
+
         if (!managerMap.has(projectId)) {
           managerMap.set(projectId, []);
         }
         managerMap.get(projectId)!.push(memberName);
       }
     });
-    
-    return managerMap;
-  }, [assignments, members]);
+
+  return managerMap;
+}, [assignments, members]);
+
 
   // Members tab calculations
   const totalLifetimeMembers = calculateTotalLifetimeMembers(members);
@@ -180,7 +189,7 @@ export default function Home() {
   const techNonTechMembersForTab = calculateTechToNonTechMembers(members);
   const associatesAnalysts = calculateAssociatesVsAnalysts(members);
   const attendancePerGBMData = calculateAttendancePerGBM(attendance, gbms, selectedQuarters);
-  const membersPerYearData = calculateMembersPerYear(members);
+  const membersPerYearData = calculateNewMembersPerQuarter(members);
   const techNonTechData = [
     { category: "Tech", count: techNonTechMembersForTab.tech },
     { category: "Non-Tech", count: techNonTechMembersForTab.nonTech }
@@ -677,13 +686,13 @@ export default function Home() {
                       {member.name || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {member.year || 'N/A'}
+                      {member.quarter_entered || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {member.role || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {member.email || 'N/A'}
+                      {member.ucsd_email || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${

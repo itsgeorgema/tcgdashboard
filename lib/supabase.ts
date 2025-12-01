@@ -28,13 +28,18 @@ export interface Project {
 }
 
 export interface Member {
-  member_id: string
-  role?: string
-  status?: boolean
-  year?: string
-  name?: string
-  email?: string
+  member_id: number
+  PID: string | null
+  name: string
+  quarter_entered: string | null
+  quarter_graduating: string | null
+  role: string | null
+  ucsd_email: string | null
+  personal_email: string | null
+  track: string | null
+  status: boolean       // converting from 0/1 in DB
 }
+
 
 export interface Company {
   company_id: string

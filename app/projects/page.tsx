@@ -133,12 +133,14 @@ export default function ProjectsPage() {
   // Create a map of project_id to project manager names
   const projectManagerMap = useMemo(() => {
     const managerMap = new Map<string, string[]>();
-    const memberMap = new Map(members.map(m => [m.member_id, m.name || 'Unknown']));
+    const memberMap = new Map<string, string>(
+      members.map(m => [String(m.member_id), m.name || 'Unknown'])
+    );
     
     assignments.forEach(assignment => {
       if (assignment.project_manager === true) {
-        const projectId = assignment.project_id;
-        const memberName = memberMap.get(assignment.member_id) || 'Unknown';
+        const projectId = String(assignment.project_id);
+        const memberName = memberMap.get(String(assignment.member_id)) || 'Unknown';
         
         if (!managerMap.has(projectId)) {
           managerMap.set(projectId, []);
@@ -149,6 +151,7 @@ export default function ProjectsPage() {
     
     return managerMap;
   }, [assignments, members]);
+
 
   if (error) {
     return (

@@ -25,23 +25,36 @@ export async function loadProjects(): Promise<Project[]> {
 
 export async function loadMembers(): Promise<Member[]> {
   if (!isSupabaseConfigured()) return []
-  
+
   try {
     const { data, error } = await supabase
       .from('member')
       .select('*')
-    
+
     if (error) {
       console.error('Error loading members:', error)
       return []
     }
-    
-    return data || []
+
+    // Enforce proper boolean + default nulls
+    return (data || []).map(row => ({
+      member_id: row.member_id,
+      PID: row.PID ?? null,
+      name: row.name,
+      quarter_entered: row.quarter_entered ?? null,
+      quarter_graduating: row.quarter_graduating ?? null,
+      role: row.role ?? null,
+      ucsd_email: row.ucsd_email ?? null,
+      personal_email: row.personal_email ?? null,
+      track: row.track ?? null,
+      status: Boolean(row.status)  // Ensures true/false always
+    }))
   } catch (error) {
     console.error('Error loading members:', error)
     return []
   }
 }
+
 
 export async function loadCompanies(): Promise<Company[]> {
   if (!isSupabaseConfigured()) return []
@@ -267,12 +280,14 @@ export function calculateProjectsPerQuarter(projects: Project[], selectedQuarter
 export function calculateTopProjectManagers(assignments: Assignment[], projects: Project[], members: Member[], selectedQuarters: string[]): { manager: string; count: number }[] {
   const filteredProjects = projects.filter(p => selectedQuarters.includes(p.quarter_id))
   const projectIds = new Set(filteredProjects.map(p => p.project_id))
-  const memberMap = new Map(members.map(m => [m.member_id, m.name || 'Unknown']))
-  const managerCounts: { [key: string]: number } = {}
+  const memberMap = new Map<string, string>(
+    members.map(m => [String(m.member_id), m.name || 'Unknown'])
+  )
+    const managerCounts: { [key: string]: number } = {}
   
   assignments.forEach(assignment => {
     if (assignment.project_manager === true && projectIds.has(assignment.project_id)) {
-      const managerName = memberMap.get(assignment.member_id) || 'Unknown'
+      const managerName = memberMap.get(String(assignment.member_id)) || 'Unknown'
       managerCounts[managerName] = (managerCounts[managerName] || 0) + 1
     }
   })
@@ -327,18 +342,19 @@ export function calculateAttendancePerGBM(attendance: Attendance[], gbms: GBM[],
   }).sort((a, b) => a.date.localeCompare(b.date))
 }
 
-export function calculateMembersPerYear(members: Member[]): { year: string; count: number }[] {
-  const yearCounts: { [key: string]: number } = {}
-  
+export function calculateNewMembersPerQuarter(members: Member[]): { quarter: string; count: number }[] {
+  const quarterCounts: { [quarter: string]: number } = {}
+
   members.forEach(member => {
-    const year = member.year || 'Unknown'
-    yearCounts[year] = (yearCounts[year] || 0) + 1
+    const quarter = member.quarter_entered || 'Unknown'
+    quarterCounts[quarter] = (quarterCounts[quarter] || 0) + 1
   })
-  
-  return Object.entries(yearCounts)
-    .map(([year, count]) => ({ year, count }))
-    .sort((a, b) => a.year.localeCompare(b.year))
+
+  return Object.entries(quarterCounts)
+    .map(([quarter, count]) => ({ quarter, count }))
+    .sort((a, b) => a.quarter.localeCompare(b.quarter))
 }
+
 
 export function calculateAssociatesVsAnalysts(members: Member[]): { associates: number; analysts: number } {
   let associates = 0
