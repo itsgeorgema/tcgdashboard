@@ -24,6 +24,7 @@ export async function loadProjects(): Promise<Project[]> {
 }
 
 export async function loadMembers(): Promise<Member[]> {
+  
   if (!isSupabaseConfigured()) return []
 
   try {
@@ -241,26 +242,26 @@ export function calculateParticipatingMembers(assignments: Assignment[], project
   return uniqueMemberIds.size
 }
 
-export function calculateTechToNonTechMembers(members: Member[]): { tech: number; nonTech: number } {
-  // Heuristic: Check if role contains tech-related keywords
-  const techKeywords = ['tech', 'software', 'engineer', 'developer', 'data', 'ai', 'ml', 'cs', 'computer']
-  
-  let techCount = 0
-  let nonTechCount = 0
-  
+export function calculateTechToNonTechMembers(
+  members: Member[]
+): { tech: number; nonTech: number } {
+
+  let tech = 0
+  let nonTech = 0
+
   members.forEach(member => {
-    const role = (member.role || '').toLowerCase()
-    const isTech = techKeywords.some(keyword => role.includes(keyword))
-    
-    if (isTech) {
-      techCount++
+    const track = (member.track || '').trim().toLowerCase()
+
+    if (track === 'tech') {
+      tech++
     } else {
-      nonTechCount++
+      nonTech++
     }
   })
-  
-  return { tech: techCount, nonTech: nonTechCount }
+
+  return { tech, nonTech }
 }
+
 
 export function calculateProjectsPerQuarter(projects: Project[], selectedQuarters: string[]): { quarter: string; count: number }[] {
   const filteredProjects = projects.filter(p => selectedQuarters.includes(p.quarter_id))
@@ -346,14 +347,51 @@ export function calculateNewMembersPerQuarter(members: Member[]): { quarter: str
   const quarterCounts: { [quarter: string]: number } = {}
 
   members.forEach(member => {
-    const quarter = member.quarter_entered || 'Unknown'
-    quarterCounts[quarter] = (quarterCounts[quarter] || 0) + 1
-  })
+    let quarter = member.quarter_entered;
+
+    // Skip unknown/invalid quarters
+    if (!quarter || typeof quarter !== "string") {
+      return;
+    }
+    
+    quarter = quarter.trim();
+    
+    // Skip "Unknown" entries
+    if (quarter === "Unknown") {
+      return;
+    }
+
+    quarterCounts[quarter] = (quarterCounts[quarter] || 0) + 1;
+  });
+
+  // Helper function to convert quarter to sortable value
+  const getQuarterValue = (quarter: string): number => {
+    // Expected format: FA22, WI23, SP23, etc.
+    const match = quarter.match(/^(FA|WI|SP|SU)(\d{2})$/);
+    if (!match) return 999999; // Invalid format goes to end
+    
+    const [, season, year] = match;
+    const yearNum = parseInt(year, 10);
+    
+    // Map seasons to order within a year
+    const seasonOrder: { [key: string]: number } = {
+      'WI': 0, // Winter (starts year)
+      'SP': 1, // Spring
+      'SU': 2, // Summer
+      'FA': 3  // Fall
+    };
+    
+    // Calculate sortable value: year * 10 + season order
+    return yearNum * 10 + (seasonOrder[season] ?? 9);
+  };
 
   return Object.entries(quarterCounts)
     .map(([quarter, count]) => ({ quarter, count }))
-    .sort((a, b) => a.quarter.localeCompare(b.quarter))
+    .sort((a, b) => {
+      return getQuarterValue(a.quarter) - getQuarterValue(b.quarter);
+    });
 }
+
 
 
 export function calculateAssociatesVsAnalysts(members: Member[]): { associates: number; analysts: number } {

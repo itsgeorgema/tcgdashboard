@@ -105,14 +105,6 @@ export default function Home() {
     loadAllData();
   }, []);
 
-  const toggleQuarter = (quarter: string) => {
-    setSelectedQuarters(prev =>
-      prev.includes(quarter)
-        ? prev.filter(q => q !== quarter)
-        : [...prev, quarter]
-    );
-  };
-
   // Get unique quarters from the data
   const availableQuarters = useMemo(() => {
     const quarters = [...new Set([
@@ -183,7 +175,7 @@ export default function Home() {
   const techNonTechMembersForTab = calculateTechToNonTechMembers(members);
   const associatesAnalysts = calculateAssociatesVsAnalysts(members);
   const attendancePerGBMData = calculateAttendancePerGBM(attendance, gbms, selectedQuarters);
-  const membersPerYearData = calculateNewMembersPerQuarter(members);
+  const membersPerQuarterData = calculateNewMembersPerQuarter(members);
   const techNonTechData = [
     { category: "Tech", count: techNonTechMembersForTab.tech },
     { category: "Non-Tech", count: techNonTechMembersForTab.nonTech }
@@ -478,12 +470,12 @@ export default function Home() {
 
         {/* Members per Year */}
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Members per Year</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">New Members Per Quarter</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <ComposedChart data={membersPerYearData}>
+            <ComposedChart data={membersPerQuarterData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis 
-                dataKey="year" 
+                dataKey="quarter" 
                 stroke="#64748b"
                 tick={{ fill: '#64748b' }}
               />
@@ -594,13 +586,22 @@ export default function Home() {
                   Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Year
+                  Quarter Entered
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Quarter Graduating
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
+                  Track
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  UCSD Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Personal Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -610,13 +611,13 @@ export default function Home() {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
                     Loading...
                   </td>
                 </tr>
               ) : members.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
                     No members found
                   </td>
                 </tr>
@@ -630,10 +631,19 @@ export default function Home() {
                       {member.quarter_entered || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {member.quarter_graduating || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {member.role || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {member.track || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {member.ucsd_email || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {member.personal_email || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -676,39 +686,6 @@ export default function Home() {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Filters Section */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b border-gray-200">
-            Filters
-          </h3>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Quarters
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {availableQuarters.map((quarter) => (
-                <button
-                  key={quarter}
-                  onClick={() => toggleQuarter(quarter)}
-                  disabled={loading}
-                  className={`px-3 py-1 text-sm cursor-pointer rounded-md border transition-colors disabled:opacity-50 ${
-                    selectedQuarters.includes(quarter)
-                      ? "bg-gray-100 border-gray-300 text-gray-900"
-                      : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {selectedQuarters.includes(quarter) && "+ "}
-                  {quarter}
-                  {selectedQuarters.includes(quarter) && (
-                    <span className="ml-1 text-gray-500">×</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Tabs Navigation */}

@@ -36,6 +36,7 @@ function KPICard({ title, value }: KPICardProps) {
 }
 
 export default function MembersPage() {
+  
   const [selectedQuarters, setSelectedQuarters] = useState<string[]>([]);
   const [quartersInitialized, setQuartersInitialized] = useState(false);
   
@@ -44,6 +45,7 @@ export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [gbms, setGBMs] = useState<GBM[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
+  
   
   // Loading state
   const [loading, setLoading] = useState(true);
@@ -83,6 +85,7 @@ export default function MembersPage() {
     loadAllData();
   }, []);
 
+  
   const toggleQuarter = (quarter: string) => {
     setSelectedQuarters(prev =>
       prev.includes(quarter)
@@ -117,7 +120,7 @@ export default function MembersPage() {
   
   // Chart data
   const attendancePerGBMData = calculateAttendancePerGBM(attendance, gbms, selectedQuarters);
-  const membersPerYearData = calculateNewMembersPerQuarter(members);
+  const membersPerQuarterData = calculateNewMembersPerQuarter(members);
   const techNonTechData = [
     { category: "Tech", count: techNonTechMembers.tech },
     { category: "Non-Tech", count: techNonTechMembers.nonTech }
@@ -165,39 +168,6 @@ export default function MembersPage() {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Filters Section */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b border-gray-200">
-            Filters
-          </h3>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Quarters
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {availableQuarters.map((quarter) => (
-                <button
-                  key={quarter}
-                  onClick={() => toggleQuarter(quarter)}
-                  disabled={loading}
-                  className={`px-3 py-1 text-sm rounded-md border transition-colors disabled:opacity-50 ${
-                    selectedQuarters.includes(quarter)
-                      ? "bg-gray-100 border-gray-300 text-gray-900"
-                      : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {selectedQuarters.includes(quarter) && "+ "}
-                  {quarter}
-                  {selectedQuarters.includes(quarter) && (
-                    <span className="ml-1 text-gray-500">×</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* KPI Cards */}
@@ -261,14 +231,14 @@ export default function MembersPage() {
             </ResponsiveContainer>
           </div>
 
-          {/* Members per Year */}
+          {/* Members per Quarter */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Members per Year</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Members per Quarter</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <ComposedChart data={membersPerYearData}>
+              <ComposedChart data={membersPerQuarterData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis 
-                  dataKey="year" 
+                  dataKey="quarter" 
                   stroke="#64748b"
                   tick={{ fill: '#64748b' }}
                 />
@@ -369,39 +339,31 @@ export default function MembersPage() {
         </div>
 
         {/* Members Database Table */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">s
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Members Database</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Year
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                </tr>
-              </thead>
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">UCSD Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Personal Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                       Loading...
                     </td>
                   </tr>
                 ) : members.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                       No members found
                     </td>
                   </tr>

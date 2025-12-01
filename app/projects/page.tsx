@@ -193,39 +193,6 @@ export default function ProjectsPage() {
           )}
         </div>
 
-        {/* Filters Section */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b border-gray-200">
-            Filters
-          </h3>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Quarters
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {availableQuarters.map((quarter) => (
-                <button
-                  key={quarter}
-                  onClick={() => toggleQuarter(quarter)}
-                  disabled={loading}
-                  className={`px-3 py-1 text-sm rounded-md border transition-colors disabled:opacity-50 ${
-                    selectedQuarters.includes(quarter)
-                      ? "bg-gray-100 border-gray-300 text-gray-900"
-                      : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {selectedQuarters.includes(quarter) && "+ "}
-                  {quarter}
-                  {selectedQuarters.includes(quarter) && (
-                    <span className="ml-1 text-gray-500">×</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
         {/* KPI Cards */}
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mb-8">
           <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">
