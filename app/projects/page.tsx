@@ -374,13 +374,13 @@ export default function ProjectsPage() {
                   filteredProjects.map((project) => (
                     <tr key={project.project_id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {companyMap.get(project.company_id || '') || 'Unknown'}
+                        {(project.company_id && companyMap.get(project.company_id)) || 'Unknown'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {project.quarter_id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {projectManagerMap.get(project.project_id)?.join(', ') || 'N/A'}
+                        {projectManagerMap.get(String(project.project_id))?.join(', ') || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {project.dnf ? 'DNF' : project.status || 'Ongoing'}
