@@ -53,6 +53,8 @@ export default function Home() {
   const [selectedQuarters, setSelectedQuarters] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("Projects");
   const [quartersInitialized, setQuartersInitialized] = useState(false);
+  const [projectSearchQuery, setProjectSearchQuery] = useState("");
+  const [memberSearchQuery, setMemberSearchQuery] = useState("");
   
   // Data state
   const [projects, setProjects] = useState<Project[]>([]);
@@ -136,6 +138,7 @@ export default function Home() {
   const filteredProjects = useMemo(() => {
     return projects.filter(p => selectedQuarters.includes(p.quarter_id));
   }, [projects, selectedQuarters]);
+  
   const companyMap = useMemo(() => {
     return new Map(companies.map(c => [c.company_id, c.name || 'Unknown']));
   }, [companies]);
@@ -144,6 +147,49 @@ export default function Home() {
   const projectManagerMap = useMemo(() => {
     return getProjectManagers(assignments, projects, members);
   }, [assignments, projects, members]);
+  
+  const searchFilteredProjects = useMemo(() => {
+    // Helper function to convert quarter to sortable number
+    const quarterToNumber = (quarter: string): number => {
+      const seasonMap: { [key: string]: number } = { 'WI': 0, 'SP': 1, 'SU': 2, 'FA': 3 };
+      const season = quarter.substring(0, 2);
+      const year = parseInt(quarter.substring(2, 4));
+      return year * 4 + (seasonMap[season] || 0);
+    };
+
+    let result = filteredProjects;
+    
+    if (projectSearchQuery.trim()) {
+      const query = projectSearchQuery.toLowerCase().trim();
+      
+      result = result.filter(project => {
+        const companyName = project.company_id !== undefined 
+          ? (companyMap.get(project.company_id) || '').toLowerCase()
+          : '';
+        const quarter = (project.quarter_id || '').toLowerCase();
+        const pm = (projectManagerMap.get(project.project_id)?.join(', ') || '').toLowerCase();
+        const track = (project.track || '').toLowerCase();
+        const status = project.dnf ? 'dnf' : (project.status || (project.quarter_id === 'FA25' ? 'ongoing' : 'completed')).toLowerCase();
+        const donated = project.donated ? 'yes' : 'no';
+        const description = (project.description || '').toLowerCase();
+        
+        return companyName.includes(query) ||
+               quarter.includes(query) ||
+               pm.includes(query) ||
+               track.includes(query) ||
+               status.includes(query) ||
+               donated.includes(query) ||
+               description.includes(query);
+      });
+    }
+    
+    // Sort by quarter descending (FA25 first)
+    return result.sort((a, b) => {
+      const aNum = quarterToNumber(a.quarter_id);
+      const bNum = quarterToNumber(b.quarter_id);
+      return bNum - aNum; // Descending order
+    });
+  }, [filteredProjects, projectSearchQuery, companyMap, projectManagerMap]);
 
 
   // Members tab calculations
@@ -162,6 +208,50 @@ export default function Home() {
     { category: "Associates", count: associatesAnalysts.associates },
     { category: "Analysts", count: associatesAnalysts.analysts }
   ];
+  
+  const searchFilteredMembers = useMemo(() => {
+    // Helper function to convert quarter to sortable number
+    const quarterToNumber = (quarter: string): number => {
+      if (!quarter) return -1; // Put members without quarter at the end
+      const seasonMap: { [key: string]: number } = { 'WI': 0, 'SP': 1, 'SU': 2, 'FA': 3 };
+      const season = quarter.substring(0, 2);
+      const year = parseInt(quarter.substring(2, 4));
+      return year * 4 + (seasonMap[season] || 0);
+    };
+
+    let result = members;
+    
+    if (memberSearchQuery.trim()) {
+      const query = memberSearchQuery.toLowerCase().trim();
+      
+      result = result.filter(member => {
+        const name = (member.name || '').toLowerCase();
+        const quarterEntered = (member.quarter_entered || '').toLowerCase();
+        const quarterGraduating = (member.quarter_graduating || '').toLowerCase();
+        const role = (member.role || '').toLowerCase();
+        const track = (member.track || '').toLowerCase();
+        const ucsdEmail = (member.ucsd_email || '').toLowerCase();
+        const personalEmail = (member.personal_email || '').toLowerCase();
+        const status = member.status ? 'active' : 'inactive';
+        
+        return name.includes(query) ||
+               quarterEntered.includes(query) ||
+               quarterGraduating.includes(query) ||
+               role.includes(query) ||
+               track.includes(query) ||
+               ucsdEmail.includes(query) ||
+               personalEmail.includes(query) ||
+               status.includes(query);
+      });
+    }
+    
+    // Sort by quarter_entered descending (most recent first)
+    return result.sort((a, b) => {
+      const aNum = quarterToNumber(a.quarter_entered || '');
+      const bNum = quarterToNumber(b.quarter_entered || '');
+      return bNum - aNum; // Descending order
+    });
+  }, [members, memberSearchQuery]);
 
   if (error) {
     return (
@@ -186,7 +276,7 @@ export default function Home() {
     <>
       {/* KPI Cards */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-8 shadow-md mb-8">
-        <div className="text-base font-semibold text-blue-900 uppercase tracking-wide mb-6">
+        <div className="text-2xl font-semibold text-blue-900 uppercase tracking-wide mb-6">
           Overview
         </div>
         <div className="grid grid-cols-3 gap-8">
@@ -251,12 +341,12 @@ export default function Home() {
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis 
                 dataKey="quarter" 
-                stroke="#64748b"
-                tick={{ fill: '#64748b', fontSize: 18 }}
+                stroke="#1f2937"
+                tick={{ fill: '#1f2937', fontSize: 18 }}
               />
               <YAxis 
-                stroke="#64748b"
-                tick={{ fill: '#64748b', fontSize: 18 }}
+                stroke="#1f2937"
+                tick={{ fill: '#1f2937', fontSize: 18 }}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -289,16 +379,16 @@ export default function Home() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis 
                   type="number"
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b', fontSize: 18 }}
+                  stroke="#1f2937"
+                  tick={{ fill: '#1f2937', fontSize: 18 }}
                   allowDecimals={false}
                 />
                 <YAxis 
                   type="category"
                   dataKey="manager"
                   width={200}
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b', fontSize: 18 }}
+                  stroke="#1f2937"
+                  tick={{ fill: '#1f2937', fontSize: 18 }}
                 />
                 <Tooltip 
                   contentStyle={{ 
@@ -327,16 +417,16 @@ export default function Home() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis 
                   type="number"
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b', fontSize: 18 }}
+                  stroke="#1f2937"
+                  tick={{ fill: '#1f2937', fontSize: 18 }}
                   ticks={[0, 1, 2, 3, 4, 5, 6]}
                 />
                 <YAxis 
                   type="category"
                   dataKey="company"
                   width={200}
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b', fontSize: 18 }}
+                  stroke="#1f2937"
+                  tick={{ fill: '#1f2937', fontSize: 18 }}
                 />
                 <Tooltip 
                   contentStyle={{ 
@@ -359,6 +449,18 @@ export default function Home() {
       {/* Projects Database Table */}
       <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-lg p-8 shadow-md">
         <h3 className="text-2xl font-semibold text-slate-900 mb-6">Projects Database</h3>
+        
+        {/* Search Box */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search projects..."
+            value={projectSearchQuery}
+            onChange={(e) => setProjectSearchQuery(e.target.value)}
+            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gradient-to-r from-blue-100 to-indigo-100">
@@ -393,14 +495,14 @@ export default function Home() {
                     Loading...
                   </td>
                 </tr>
-              ) : filteredProjects.length === 0 ? (
+              ) : searchFilteredProjects.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-4 text-center text-base text-gray-500">
-                    No projects found for selected quarters
+                    No projects found
                   </td>
                 </tr>
               ) : (
-                filteredProjects.map((project) => (
+                searchFilteredProjects.map((project) => (
                   <tr key={project.project_id} className="hover:bg-blue-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {project.company_id !== undefined ? (companyMap.get(project.company_id) || 'Unknown') : 'Unknown'}
@@ -443,7 +545,7 @@ export default function Home() {
     <>
       {/* KPI Cards */}
       <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-8 shadow-md mb-8">
-        <div className="text-base font-semibold text-emerald-900 uppercase tracking-wide mb-6">
+        <div className="text-2xl font-semibold text-emerald-900 uppercase tracking-wide mb-6">
           Overview
         </div>
         <div className="grid grid-cols-4 gap-8">
@@ -492,15 +594,15 @@ export default function Home() {
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis 
                 dataKey="date" 
-                stroke="#64748b"
-                tick={{ fill: '#64748b', fontSize: 18 }}
+                stroke="#1f2937"
+                tick={{ fill: '#1f2937', fontSize: 18 }}
                 angle={-45}
                 textAnchor="end"
                 height={80}
               />
               <YAxis 
-                stroke="#64748b"
-                tick={{ fill: '#64748b', fontSize: 18 }}
+                stroke="#1f2937"
+                tick={{ fill: '#1f2937', fontSize: 18 }}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -529,12 +631,12 @@ export default function Home() {
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis 
                 dataKey="quarter" 
-                stroke="#64748b"
-                tick={{ fill: '#64748b', fontSize: 18 }}
+                stroke="#1f2937"
+                tick={{ fill: '#1f2937', fontSize: 18 }}
               />
               <YAxis 
-                stroke="#64748b"
-                tick={{ fill: '#64748b', fontSize: 18 }}
+                stroke="#1f2937"
+                tick={{ fill: '#1f2937', fontSize: 18 }}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -566,15 +668,15 @@ export default function Home() {
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis 
                 type="number"
-                stroke="#64748b"
-                tick={{ fill: '#64748b', fontSize: 18 }}
+                stroke="#1f2937"
+                tick={{ fill: '#1f2937', fontSize: 18 }}
               />
               <YAxis 
                 type="category"
                 dataKey="category"
                 width={120}
-                stroke="#64748b"
-                tick={{ fill: '#64748b', fontSize: 18 }}
+                stroke="#1f2937"
+                tick={{ fill: '#1f2937', fontSize: 18 }}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -603,15 +705,15 @@ export default function Home() {
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis 
                 type="number"
-                stroke="#64748b"
-                tick={{ fill: '#64748b', fontSize: 18 }}
+                stroke="#1f2937"
+                tick={{ fill: '#1f2937', fontSize: 18 }}
               />
               <YAxis 
                 type="category"
                 dataKey="category"
                 width={120}
-                stroke="#64748b"
-                tick={{ fill: '#64748b', fontSize: 18 }}
+                stroke="#1f2937"
+                tick={{ fill: '#1f2937', fontSize: 18 }}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -633,6 +735,18 @@ export default function Home() {
       {/* Members Database Table */}
       <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-lg p-8 shadow-md">
         <h3 className="text-2xl font-semibold text-slate-900 mb-6">Members Database</h3>
+        
+        {/* Search Box */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search members..."
+            value={memberSearchQuery}
+            onChange={(e) => setMemberSearchQuery(e.target.value)}
+            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          />
+        </div>
+        
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gradient-to-r from-emerald-100 to-teal-100">
@@ -670,14 +784,14 @@ export default function Home() {
                     Loading...
                   </td>
                 </tr>
-              ) : members.length === 0 ? (
+              ) : searchFilteredMembers.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-4 text-center text-base text-gray-500">
                     No members found
                   </td>
                 </tr>
               ) : (
-                members.map((member) => (
+                searchFilteredMembers.map((member) => (
                   <tr key={member.member_id} className="hover:bg-emerald-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {member.name || 'N/A'}
@@ -724,8 +838,8 @@ export default function Home() {
       <div className="max-w-[80%] mx-auto px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-2">
-            <Image src="/logo.png" alt="TCG Logo" width={60} height={60} className="object-contain" />
+          <div className="flex items-center gap-6 mb-2">
+            <Image src="/logo.png" alt="TCG Logo" width={120} height={120} className="object-contain" />
             <h1 className="text-5xl font-bold text-gray-900">TCG Dashboard</h1>
           </div>
           {loading && (
@@ -744,20 +858,33 @@ export default function Home() {
         </div>
 
         {/* Tabs Navigation */}
-        <div className="bg-gray-100 rounded-lg p-2 mb-8 inline-flex">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-8 py-4 rounded-md cursor-pointer text-lg font-medium transition-colors ${
-                activeTab === tab
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+        <div className="bg-gray-100 rounded-lg p-2 mb-8 inline-flex gap-2">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab;
+            const isProjects = tab === "Projects";
+            
+            let buttonClasses = "px-8 py-4 rounded-md cursor-pointer text-xl font-bold transition-all ";
+            
+            if (isActive) {
+              buttonClasses += isProjects 
+                ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg"
+                : "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg";
+            } else {
+              buttonClasses += isProjects
+                ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
+                : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200";
+            }
+            
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={buttonClasses}
+              >
+                {tab}
+              </button>
+            );
+          })}
         </div>
 
         {/* Tab Content */}

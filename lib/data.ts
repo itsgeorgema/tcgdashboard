@@ -421,10 +421,11 @@ export function calculateAssociatesVsAnalysts(members: Member[]): { associates: 
   
   members.forEach(member => {
     const role = (member.role || '').toLowerCase()
-    if (role.includes('associate')) {
-      associates++
-    } else if (role.includes('analyst')) {
+    // Check for analyst first, otherwise count as associate
+    if (role.includes('analyst')) {
       analysts++
+    } else {
+      associates++
     }
   })
   
