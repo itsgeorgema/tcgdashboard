@@ -55,6 +55,11 @@ export default function Home() {
   const [quartersInitialized, setQuartersInitialized] = useState(false);
   const [projectSearchQuery, setProjectSearchQuery] = useState("");
   const [memberSearchQuery, setMemberSearchQuery] = useState("");
+  const [showAllProjects, setShowAllProjects] = useState(false);
+  const [showAllMembers, setShowAllMembers] = useState(false);
+  const [showAllAttendance, setShowAllAttendance] = useState(false);
+  const [showAttendance, setShowAttendance] = useState(false);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<number>>(new Set());
   
   // Data state
   const [projects, setProjects] = useState<Project[]>([]);
@@ -126,7 +131,7 @@ export default function Home() {
   }, [availableQuarters, quartersInitialized, loading]);
 
   // Projects tab calculations
-  const activeProjects = calculateActiveProjects(projects, selectedQuarters);
+  const activeProjects = calculateActiveProjects(projects, ['FA25']);
   const totalLifetimeProjects = calculateTotalLifetimeProjects(projects);
   const techNonTechProjects = calculateTechToNonTechProjects(projects, selectedQuarters);
   const participatingMembers = calculateParticipatingMembers(assignments, projects, selectedQuarters);
@@ -253,6 +258,65 @@ export default function Home() {
     });
   }, [members, memberSearchQuery]);
 
+  // Attendance matrix for members
+  const attendanceMatrix = useMemo(() => {
+    // Get GBMs for selected quarters
+    const filteredGBMs = gbms.filter(g => selectedQuarters.includes(g.quarter_id));
+    
+    // Sort GBMs by date
+    const sortedGBMs = filteredGBMs.sort((a, b) => {
+      const dateA = a.date ? new Date(a.date).getTime() : 0;
+      const dateB = b.date ? new Date(b.date).getTime() : 0;
+      return dateA - dateB;
+    });
+    
+    // Create attendance map for quick lookup
+    const attendanceMap = new Map<string, boolean>();
+    attendance.forEach(att => {
+      const key = `${att.member_id}-${att.gbm_id}`;
+      attendanceMap.set(key, att.status === true);
+    });
+    
+    // Build matrix data
+    return members.map(member => {
+      const memberAttendance = sortedGBMs.map(gbm => {
+        const key = `${member.member_id}-${gbm.gbm_id}`;
+        return attendanceMap.get(key) || false;
+      });
+      
+      const totalAttended = memberAttendance.filter(attended => attended).length;
+      
+      return {
+        member,
+        attendance: memberAttendance,
+        totalAttended
+      };
+    });
+  }, [members, gbms, attendance, selectedQuarters]);
+
+  // Get sorted GBMs for table headers
+  const sortedGBMsForHeaders = useMemo(() => {
+    const filteredGBMs = gbms.filter(g => selectedQuarters.includes(g.quarter_id));
+    return filteredGBMs.sort((a, b) => {
+      const dateA = a.date ? new Date(a.date).getTime() : 0;
+      const dateB = b.date ? new Date(b.date).getTime() : 0;
+      return dateA - dateB;
+    });
+  }, [gbms, selectedQuarters]);
+
+  // Filtered attendance matrix based on search
+  const searchFilteredAttendanceMatrix = useMemo(() => {
+    if (!memberSearchQuery.trim()) {
+      return attendanceMatrix;
+    }
+    
+    const query = memberSearchQuery.toLowerCase().trim();
+    return attendanceMatrix.filter(row => {
+      const name = (row.member.name || '').toLowerCase();
+      return name.includes(query);
+    });
+  }, [attendanceMatrix, memberSearchQuery]);
+
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -354,6 +418,7 @@ export default function Home() {
                   border: '1px solid #e2e8f0',
                   borderRadius: '8px'
                 }}
+                labelStyle={{ fontWeight: 'bold' }}
               />
               <Line 
                 type="monotone" 
@@ -396,6 +461,7 @@ export default function Home() {
                     border: '1px solid #e2e8f0',
                     borderRadius: '8px'
                   }}
+                  labelStyle={{ fontWeight: 'bold' }}
                 />
                 <Bar 
                   dataKey="count" 
@@ -434,6 +500,7 @@ export default function Home() {
                     border: '1px solid #e2e8f0',
                     borderRadius: '8px'
                   }}
+                  labelStyle={{ fontWeight: 'bold' }}
                 />
                 <Bar 
                   dataKey="count" 
@@ -502,7 +569,7 @@ export default function Home() {
                   </td>
                 </tr>
               ) : (
-                searchFilteredProjects.map((project) => (
+                (showAllProjects ? searchFilteredProjects : searchFilteredProjects.slice(0, 20)).map((project) => (
                   <tr key={project.project_id} className="hover:bg-blue-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {project.company_id !== undefined ? (companyMap.get(project.company_id) || 'Unknown') : 'Unknown'}
@@ -528,7 +595,20 @@ export default function Home() {
                     <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {project.donated ? 'Yes' : 'No'}
                     </td>
-                    <td className="px-6 py-4 text-base text-gray-900 max-w-md truncate">
+                    <td 
+                      className={`px-6 py-4 text-base text-gray-900 max-w-md cursor-pointer hover:bg-gray-100 ${
+                        expandedDescriptions.has(project.project_id) ? '' : 'truncate'
+                      }`}
+                      onClick={() => {
+                        const newExpanded = new Set(expandedDescriptions);
+                        if (newExpanded.has(project.project_id)) {
+                          newExpanded.delete(project.project_id);
+                        } else {
+                          newExpanded.add(project.project_id);
+                        }
+                        setExpandedDescriptions(newExpanded);
+                      }}
+                    >
                       {project.description && project.description !== 'nan' ? project.description : 'No description given'}
                     </td>
                   </tr>
@@ -537,6 +617,18 @@ export default function Home() {
             </tbody>
           </table>
         </div>
+        
+        {/* Show All / Show Less Button */}
+        {searchFilteredProjects.length > 20 && (
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => setShowAllProjects(!showAllProjects)}
+              className="px-6 py-3 text-base font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:shadow-lg transition-all"
+            >
+              {showAllProjects ? 'Show Less' : `Show All (${searchFilteredProjects.length} projects)`}
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
@@ -605,10 +697,23 @@ export default function Home() {
                 tick={{ fill: '#1f2937', fontSize: 18 }}
               />
               <Tooltip 
-                contentStyle={{ 
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div style={{ 
                   backgroundColor: '#fff', 
                   border: '1px solid #e2e8f0',
-                  borderRadius: '8px'
+                        borderRadius: '8px',
+                        padding: '10px'
+                      }}>
+                        <p style={{ margin: 0, fontWeight: 'bold' }}>{label}</p>
+                        <p style={{ margin: '5px 0 0 0', color: '#10B981' }}>
+                          count: {payload[0].value}
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
                 }}
               />
               <Bar dataKey="attendance" fill="#10B981" />
@@ -639,10 +744,23 @@ export default function Home() {
                 tick={{ fill: '#1f2937', fontSize: 18 }}
               />
               <Tooltip 
-                contentStyle={{ 
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div style={{ 
                   backgroundColor: '#fff', 
                   border: '1px solid #e2e8f0',
-                  borderRadius: '8px'
+                        borderRadius: '8px',
+                        padding: '10px'
+                      }}>
+                        <p style={{ margin: 0, fontWeight: 'bold' }}>{label}</p>
+                        <p style={{ margin: '5px 0 0 0', color: '#14B8A6' }}>
+                          count: {payload[0].value}
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
                 }}
               />
               <Bar dataKey="count" fill="#14B8A6" />
@@ -684,6 +802,7 @@ export default function Home() {
                   border: '1px solid #e2e8f0',
                   borderRadius: '8px'
                 }}
+                labelStyle={{ fontWeight: 'bold' }}
               />
               <Bar 
                 dataKey="count" 
@@ -721,6 +840,7 @@ export default function Home() {
                   border: '1px solid #e2e8f0',
                   borderRadius: '8px'
                 }}
+                labelStyle={{ fontWeight: 'bold' }}
               />
               <Bar 
                 dataKey="count" 
@@ -734,45 +854,57 @@ export default function Home() {
 
       {/* Members Database Table */}
       <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-lg p-8 shadow-md">
-        <h3 className="text-2xl font-semibold text-slate-900 mb-6">Members Database</h3>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-semibold text-slate-900">
+            {showAttendance ? 'GBM Attendance Tracking' : 'Members Database'}
+          </h3>
+          <button
+            onClick={() => setShowAttendance(!showAttendance)}
+            className="px-6 py-3 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:shadow-lg transition-all"
+          >
+            {showAttendance ? 'Show Member Data' : 'Show Attendance'}
+          </button>
+        </div>
         
         {/* Search Box */}
         <div className="mb-6">
           <input
             type="text"
-            placeholder="Search members..."
+            placeholder={showAttendance ? "Search members..." : "Search members..."}
             value={memberSearchQuery}
             onChange={(e) => setMemberSearchQuery(e.target.value)}
             className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
           />
         </div>
         
+        {!showAttendance ? (
+          <>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gradient-to-r from-emerald-100 to-teal-100">
+                <thead className="bg-gradient-to-r from-emerald-100 to-teal-100">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
                   Name
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
                   Quarter Entered
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
                   Quarter Graduating
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
                   Role
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
                   Track
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
                   UCSD Email
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
                   Personal Email
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
                   Status
                 </th>
               </tr>
@@ -780,42 +912,42 @@ export default function Home() {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-base text-gray-500">
+                      <td colSpan={8} className="px-6 py-4 text-center text-base text-gray-500">
                     Loading...
                   </td>
                 </tr>
-              ) : searchFilteredMembers.length === 0 ? (
+                  ) : searchFilteredMembers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-base text-gray-500">
+                      <td colSpan={8} className="px-6 py-4 text-center text-base text-gray-500">
                     No members found
                   </td>
                 </tr>
               ) : (
-                searchFilteredMembers.map((member) => (
-                  <tr key={member.member_id} className="hover:bg-emerald-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
+                    (showAllMembers ? searchFilteredMembers : searchFilteredMembers.slice(0, 20)).map((member) => (
+                      <tr key={member.member_id} className="hover:bg-emerald-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {member.name || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {member.quarter_entered || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {member.quarter_graduating || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {member.role || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {member.track || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {member.ucsd_email || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
+                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {member.personal_email || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-base">
-                      <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${
+                        <td className="px-6 py-4 whitespace-nowrap text-base">
+                          <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${
                         member.status 
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-red-100 text-red-800'
@@ -829,6 +961,100 @@ export default function Home() {
             </tbody>
           </table>
         </div>
+            
+            {/* Show All / Show Less Button */}
+            {searchFilteredMembers.length > 20 && (
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowAllMembers(!showAllMembers)}
+                  className="px-6 py-3 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:shadow-lg transition-all"
+                >
+                  {showAllMembers ? 'Show Less' : `Show All (${searchFilteredMembers.length} members)`}
+                </button>
+      </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gradient-to-r from-emerald-100 to-teal-100">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider sticky left-0 bg-gradient-to-r from-emerald-100 to-teal-100">
+                      Member Name
+                    </th>
+                    {sortedGBMsForHeaders.map(gbm => {
+                      let formattedDate = gbm.gbm_id;
+                      if (gbm.date) {
+                        try {
+                          const dateObj = new Date(gbm.date);
+                          formattedDate = dateObj.toISOString().split('T')[0];
+                        } catch {
+                          formattedDate = gbm.date.split(' ')[0] || gbm.date;
+                        }
+                      }
+                      return (
+                        <th key={gbm.gbm_id} className="px-6 py-4 text-center text-sm font-medium text-emerald-900 uppercase tracking-wider whitespace-nowrap">
+                          {formattedDate}
+                        </th>
+                      );
+                    })}
+                    <th className="px-6 py-4 text-center text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                      Total Attended
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={sortedGBMsForHeaders.length + 2} className="px-6 py-4 text-center text-base text-gray-500">
+                        Loading...
+                      </td>
+                    </tr>
+                  ) : searchFilteredAttendanceMatrix.length === 0 ? (
+                    <tr>
+                      <td colSpan={sortedGBMsForHeaders.length + 2} className="px-6 py-4 text-center text-base text-gray-500">
+                        No members found
+                      </td>
+                    </tr>
+                  ) : (
+                    (showAllAttendance ? searchFilteredAttendanceMatrix : searchFilteredAttendanceMatrix.slice(0, 20)).map((row) => (
+                      <tr key={row.member.member_id} className="hover:bg-emerald-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900 font-medium sticky left-0 bg-white">
+                          {row.member.name || 'Unknown'}
+                        </td>
+                        {row.attendance.map((attended, idx) => (
+                          <td key={idx} className="px-6 py-4 text-center text-base">
+                            {attended ? (
+                              <span className="text-green-600 text-xl font-bold">✓</span>
+                            ) : (
+                              <span className="text-red-600 text-xl font-bold">✗</span>
+                            )}
+                          </td>
+                        ))}
+                        <td className="px-6 py-4 text-center text-base text-gray-900 font-semibold">
+                          {row.totalAttended}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Show All / Show Less Button for Attendance */}
+            {searchFilteredAttendanceMatrix.length > 20 && (
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowAllAttendance(!showAllAttendance)}
+                  className="px-6 py-3 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:shadow-lg transition-all"
+                >
+                  {showAllAttendance ? 'Show Less' : `Show All (${searchFilteredAttendanceMatrix.length} members)`}
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </>
   );
@@ -876,13 +1102,13 @@ export default function Home() {
             }
             
             return (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
                 className={buttonClasses}
-              >
-                {tab}
-              </button>
+            >
+              {tab}
+            </button>
             );
           })}
         </div>
