@@ -850,7 +850,7 @@ export default function Home() {
           </h3>
           <button
             onClick={() => setShowAttendance(!showAttendance)}
-            className="px-6 py-3 text-base font-semibold bg-[var(--navy-blue)] text-white rounded-lg hover:shadow-lg transition-all"
+            className="px-6 py-3 text-base cursor-pointer font-semibold bg-[var(--navy-blue)] text-white rounded-lg hover:shadow-lg transition-all"
           >
             {showAttendance ? 'Show Member Data' : 'Show Attendance'}
           </button>
@@ -957,7 +957,7 @@ export default function Home() {
               <div className="mt-6 text-center">
                 <button
                   onClick={() => setShowAllMembers(!showAllMembers)}
-                  className="px-6 py-3 text-base font-montserrat bg-[var(--navy-blue)] text-white rounded-lg hover:shadow-lg transition-all"
+                  className="px-6 py-3 text-base cursor-pointer font-montserrat bg-[var(--navy-blue)] text-white rounded-lg hover:shadow-lg transition-all"
                 >
                   {showAllMembers ? 'Show Less' : `Show All (${searchFilteredMembers.length} members)`}
                 </button>
