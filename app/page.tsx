@@ -413,6 +413,7 @@ export default function Home() {
                 width={150}
                 stroke="var(--chart-axis)"
                 tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
+                interval={0}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -452,6 +453,7 @@ export default function Home() {
                 width={150}
                 stroke="var(--chart-axis)"
                 tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
+                interval={0}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -685,6 +687,7 @@ export default function Home() {
                 width={100}
                 stroke="var(--chart-axis)"
                 tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
+                interval={0}
               />
               <Tooltip 
                 contentStyle={{ 
@@ -723,6 +726,7 @@ export default function Home() {
                 width={100}
                 stroke="var(--chart-axis)"
                 tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
+                interval={0}
               />
               <Tooltip 
                 contentStyle={{ 
