@@ -1054,9 +1054,9 @@ export default function Home() {
       <div className="w-full max-w-full sm:max-w-[90%] md:max-w-[80%] mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4 sm:gap-0 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between sm:gap-0 mb-4 sm:mb-6">
             <div className="flex items-center justify-center gap-4 sm:gap-6 flex-shrink-0">
-              <Image src="/logo.png" alt="TCG Logo" width={120} height={120} className="object-contain w-20 h-20 sm:w-[120px] sm:h-[120px]" />
+              <Image src="/logo.png" alt="TCG Logo" width={120} height={120} className="object-contain w-24 h-24 sm:w-[120px] sm:h-[120px]" />
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-montserrat text-[var(--navy-blue)]">KPI Dashboard</h1>
             </div>
             
@@ -1094,7 +1094,7 @@ export default function Home() {
           {!loading && !isSupabaseConfigured() && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
               <div className="text-yellow-800 text-base">
-                <strong>⚠️ Supabase not configured:</strong> Please set up your environment variables in <code>.env.local</code> to connect to your database.
+                <strong>Supabase not configured:</strong> Please set up your environment variables in <code>.env.local</code> to connect to your database.
               </div>
             </div>
           )}
