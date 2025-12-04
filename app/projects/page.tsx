@@ -173,14 +173,14 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--cream)]">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Projects Dashboard</h1>
+          <h1 className="text-4xl font-bold text-[var(--navy-blue)] mb-2">Projects Dashboard</h1>
           {loading && (
             <div className="text-sm text-gray-500 flex items-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--navy-blue)] mr-2"></div>
               Loading data...
             </div>
           )}
@@ -221,32 +221,32 @@ export default function ProjectsPage() {
         <div className="space-y-6 mb-8">
           {/* Projects per Quarter Line Chart */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Projects per Quarter</h3>
+            <h3 className="text-lg font-semibold text-[var(--navy-blue)] mb-4">Projects per Quarter</h3>
             <ResponsiveContainer width="100%" height={400}>
               <LineChart data={projectsPerQuarterData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                 <XAxis 
                   dataKey="quarter" 
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b' }}
+                  stroke="var(--chart-axis-light)"
+                  tick={{ fill: 'var(--chart-axis-light)' }}
                 />
                 <YAxis 
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b' }}
+                  stroke="var(--chart-axis-light)"
+                  tick={{ fill: 'var(--chart-axis-light)' }}
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#fff', 
-                    border: '1px solid #e2e8f0',
+                    backgroundColor: 'var(--white)', 
+                    border: '1px solid var(--chart-grid)',
                     borderRadius: '8px'
                   }}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="count" 
-                  stroke="#2563eb" 
+                  stroke="var(--navy-blue)" 
                   strokeWidth={2}
-                  dot={{ fill: '#2563eb', r: 4 }}
+                  dot={{ fill: 'var(--navy-blue)', r: 4 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -256,35 +256,35 @@ export default function ProjectsPage() {
           <div className="grid grid-cols-2 gap-6">
             {/* Top Project Managers */}
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Project Managers</h3>
+              <h3 className="text-lg font-semibold text-[var(--navy-blue)] mb-4">Top Project Managers</h3>
               <ResponsiveContainer width="100%" height={400}>
                 <BarChart 
                   data={topManagersData}
                   layout="vertical"
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                   <XAxis 
                     type="number"
-                    stroke="#64748b"
-                    tick={{ fill: '#64748b' }}
+                    stroke="var(--chart-axis-light)"
+                    tick={{ fill: 'var(--chart-axis-light)' }}
                   />
                   <YAxis 
                     type="category"
                     dataKey="manager"
                     width={120}
-                    stroke="#64748b"
-                    tick={{ fill: '#64748b', fontSize: 12 }}
+                    stroke="var(--chart-axis-light)"
+                    tick={{ fill: 'var(--chart-axis-light)', fontSize: 12 }}
                   />
                   <Tooltip 
                     contentStyle={{ 
-                      backgroundColor: '#fff', 
-                      border: '1px solid #e2e8f0',
+                      backgroundColor: 'var(--white)', 
+                      border: '1px solid var(--chart-grid)',
                       borderRadius: '8px'
                     }}
                   />
                   <Bar 
                     dataKey="count" 
-                    fill="#8b5cf6"
+                    fill="var(--navy-blue-medium)"
                     radius={[0, 4, 4, 0]}
                   />
                 </BarChart>
@@ -293,35 +293,35 @@ export default function ProjectsPage() {
 
             {/* Projects per Company */}
             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Projects per Company</h3>
+              <h3 className="text-lg font-semibold text-[var(--navy-blue)] mb-4">Projects per Company</h3>
               <ResponsiveContainer width="100%" height={400}>
                 <BarChart 
                   data={projectsPerCompanyData}
                   layout="vertical"
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                   <XAxis 
                     type="number"
-                    stroke="#64748b"
-                    tick={{ fill: '#64748b' }}
+                    stroke="var(--chart-axis-light)"
+                    tick={{ fill: 'var(--chart-axis-light)' }}
                   />
                   <YAxis 
                     type="category"
                     dataKey="company"
                     width={120}
-                    stroke="#64748b"
-                    tick={{ fill: '#64748b', fontSize: 12 }}
+                    stroke="var(--chart-axis-light)"
+                    tick={{ fill: 'var(--chart-axis-light)', fontSize: 12 }}
                   />
                   <Tooltip 
                     contentStyle={{ 
-                      backgroundColor: '#fff', 
-                      border: '1px solid #e2e8f0',
+                      backgroundColor: 'var(--white)', 
+                      border: '1px solid var(--chart-grid)',
                       borderRadius: '8px'
                     }}
                   />
                   <Bar 
                     dataKey="count" 
-                    fill="#8b5cf6"
+                    fill="var(--navy-blue-medium)"
                     radius={[0, 4, 4, 0]}
                   />
                 </BarChart>
@@ -332,7 +332,7 @@ export default function ProjectsPage() {
 
         {/* Projects Database Table */}
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Projects Database</h3>
+          <h3 className="text-lg font-semibold text-[var(--navy-blue)] mb-4">Projects Database</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">

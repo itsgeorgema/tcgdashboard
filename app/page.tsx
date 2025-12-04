@@ -338,184 +338,176 @@ export default function Home() {
 
   const renderProjectsTab = () => (
     <>
-      {/* KPI Cards */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-8 shadow-md mb-8">
-        <div className="text-2xl font-semibold text-blue-900 uppercase tracking-wide mb-6">
-          Overview
+      {/* Compact KPI Cards - Top Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full min-h-[110px]">
+          <div className="text-xs font-semibold text-[var(--navy-blue-medium)] uppercase tracking-wide">
+            Active Projects
+          </div>
+          <div className="text-3xl font-bold text-gray-900 mt-auto">
+            {loading ? "..." : activeProjects}
+          </div>
         </div>
-        <div className="grid grid-cols-3 gap-8">
-          <div className="bg-white border-l-4 border-blue-500 rounded-lg p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-3">
-              Active Projects
-            </div>
-            <div className="text-4xl font-bold text-gray-900">
-              {loading ? "..." : activeProjects}
-            </div>
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full min-h-[110px]">
+          <div className="text-xs font-semibold text-[var(--navy-blue-medium)] uppercase tracking-wide">
+            Lifetime Projects
           </div>
-          <div className="bg-white border-l-4 border-indigo-500 rounded-lg p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-sm font-semibold text-indigo-600 uppercase tracking-wide mb-3">
-              Tech to Business Projects
-            </div>
-            <div className="text-4xl font-bold text-gray-900">
-              {loading ? "..." : `${techNonTechProjects.tech}:${techNonTechProjects.nonTech}`}
-            </div>
+          <div className="text-3xl font-bold text-gray-900 mt-auto">
+            {loading ? "..." : totalLifetimeProjects}
           </div>
-          <div className="bg-white border-l-4 border-blue-500 rounded-lg p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-3">
-              Total Lifetime Projects
-            </div>
-            <div className="text-4xl font-bold text-gray-900">
-              {loading ? "..." : totalLifetimeProjects}
-            </div>
+        </div>
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full min-h-[110px]">
+          <div className="text-xs font-semibold text-[var(--navy-blue-medium)] uppercase tracking-wide">
+            Tech:Business Projects
           </div>
-          <div className="bg-white border-l-4 border-indigo-500 rounded-lg p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-sm font-semibold text-indigo-600 uppercase tracking-wide mb-3">
-              Participating Members
-            </div>
-            <div className="text-4xl font-bold text-gray-900">
-              {loading ? "..." : participatingMembers}
-            </div>
+          <div className="text-3xl font-bold text-gray-900 mt-auto">
+            {loading ? "..." : `${techNonTechProjects.tech}:${techNonTechProjects.nonTech}`}
           </div>
-          <div className="bg-white border-l-4 border-blue-500 rounded-lg p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-3">
-              Tech to Business Members
-            </div>
-            <div className="text-4xl font-bold text-gray-900">
-              {loading ? "..." : `${techNonTechMembers.tech}:${techNonTechMembers.nonTech}`}
-            </div>
+        </div>
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full min-h-[110px]">
+          <div className="text-xs font-semibold text-[var(--navy-blue-medium)] uppercase tracking-wide">
+            Participating Members
           </div>
-          <div className="bg-white border-l-4 border-indigo-500 rounded-lg p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-sm font-semibold text-indigo-600 uppercase tracking-wide mb-3">
-              Average Members per Active Project
-            </div>
-            <div className="text-4xl font-bold text-gray-900">
-              {loading ? "..." : avgMembersPerProject > 0 ? avgMembersPerProject.toFixed(1) : "0"}
-            </div>
+          <div className="text-3xl font-bold text-gray-900 mt-auto">
+            {loading ? "..." : participatingMembers}
+          </div>
+        </div>
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full min-h-[110px]">
+          <div className="text-xs font-semibold text-[var(--navy-blue-medium)] uppercase tracking-wide">
+            Tech:Business Members
+          </div>
+          <div className="text-3xl font-bold text-gray-900 mt-auto">
+            {loading ? "..." : `${techNonTechMembers.tech}:${techNonTechMembers.nonTech}`}
+          </div>
+        </div>
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full min-h-[110px]">
+          <div className="text-xs font-semibold text-[var(--navy-blue-medium)] uppercase tracking-wide">
+            Avg Team Size
+          </div>
+          <div className="text-3xl font-bold text-gray-900 mt-auto">
+            {loading ? "..." : avgMembersPerProject > 0 ? avgMembersPerProject.toFixed(1) : "0"}
           </div>
         </div>
       </div>
 
-      {/* Charts Section */}
-      <div className="space-y-8 mb-8">
-        {/* Projects per Quarter Line Chart */}
-        <div className="bg-gradient-to-br from-white to-blue-50 border border-blue-200 rounded-lg p-8 shadow-md">
-          <h3 className="text-2xl font-semibold text-blue-900 mb-6">Projects per Quarter</h3>
-          <ResponsiveContainer width="100%" height={500}>
-            <LineChart data={projectsPerQuarterData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+      {/* Charts Section - Reordered */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Top Project Managers */}
+          <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-6 shadow-md">
+            <h3 className="text-lg sm:text-xl font-semibold text-[var(--navy-blue)] mb-4">Top Project Managers</h3>
+          <ResponsiveContainer width="100%" height={250} className="sm:h-[350px]">
+            <BarChart 
+              data={topManagersData}
+              layout="vertical"
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
               <XAxis 
-                dataKey="quarter" 
-                stroke="#1f2937"
-                tick={{ fill: '#1f2937', fontSize: 18 }}
+                type="number"
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
+                allowDecimals={false}
               />
               <YAxis 
-                stroke="#1f2937"
-                tick={{ fill: '#1f2937', fontSize: 18 }}
+                type="category"
+                dataKey="manager"
+                width={150}
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
               />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #e2e8f0',
+                  backgroundColor: 'var(--white)', 
+                  border: '1px solid var(--chart-grid)',
                   borderRadius: '8px'
                 }}
                 labelStyle={{ fontWeight: 'bold' }}
               />
-              <Line 
-                type="monotone" 
+              <Bar 
                 dataKey="count" 
-                stroke="#3B82F6" 
-                strokeWidth={3}
-                dot={{ fill: '#3B82F6', r: 5, strokeWidth: 2, stroke: '#fff' }}
+                fill="var(--navy-blue-medium)"
+                radius={[0, 4, 4, 0]}
               />
-            </LineChart>
+            </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Two Bar Charts Side by Side */}
-        <div className="grid grid-cols-2 gap-8">
-          {/* Top Project Managers */}
-          <div className="bg-gradient-to-br from-white to-indigo-50 border border-indigo-200 rounded-lg p-8 shadow-md">
-            <h3 className="text-2xl font-semibold text-indigo-900 mb-6">Top Project Managers</h3>
-            <ResponsiveContainer width="100%" height={500}>
-              <BarChart 
-                data={topManagersData}
-                layout="vertical"
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis 
-                  type="number"
-                  stroke="#1f2937"
-                  tick={{ fill: '#1f2937', fontSize: 18 }}
-                  allowDecimals={false}
-                />
-                <YAxis 
-                  type="category"
-                  dataKey="manager"
-                  width={200}
-                  stroke="#1f2937"
-                  tick={{ fill: '#1f2937', fontSize: 18 }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#fff', 
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px'
-                  }}
-                  labelStyle={{ fontWeight: 'bold' }}
-                />
-                <Bar 
-                  dataKey="count" 
-                  fill="#6366F1"
-                  radius={[0, 4, 4, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Projects per Company */}
-          <div className="bg-gradient-to-br from-white to-cyan-50 border border-cyan-200 rounded-lg p-8 shadow-md">
-            <h3 className="text-2xl font-semibold text-cyan-900 mb-6">Projects per Company</h3>
-            <ResponsiveContainer width="100%" height={500}>
-              <BarChart 
-                data={projectsPerCompanyData}
-                layout="vertical"
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis 
-                  type="number"
-                  stroke="#1f2937"
-                  tick={{ fill: '#1f2937', fontSize: 18 }}
-                  ticks={[0, 1, 2, 3, 4, 5, 6]}
-                />
-                <YAxis 
-                  type="category"
-                  dataKey="company"
-                  width={200}
-                  stroke="#1f2937"
-                  tick={{ fill: '#1f2937', fontSize: 18 }}
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#fff', 
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px'
-                  }}
-                  labelStyle={{ fontWeight: 'bold' }}
-                />
-                <Bar 
-                  dataKey="count" 
-                  fill="#06B6D4"
-                  radius={[0, 4, 4, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+        {/* Projects per Company */}
+          <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-6 shadow-md">
+            <h3 className="text-lg sm:text-xl font-semibold text-[var(--navy-blue)] mb-4">Projects per Company</h3>
+          <ResponsiveContainer width="100%" height={250} className="sm:h-[350px]">
+            <BarChart 
+              data={projectsPerCompanyData}
+              layout="vertical"
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+              <XAxis 
+                type="number"
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
+                ticks={[0, 1, 2, 3, 4, 5, 6]}
+              />
+              <YAxis 
+                type="category"
+                dataKey="company"
+                width={150}
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'var(--white)', 
+                  border: '1px solid var(--chart-grid)',
+                  borderRadius: '8px'
+                }}
+                labelStyle={{ fontWeight: 'bold' }}
+              />
+              <Bar 
+                dataKey="count" 
+                fill="var(--navy-blue)"
+                radius={[0, 4, 4, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
+      {/* Projects per Quarter Line Chart - Full Width */}
+      <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-6 shadow-md mb-6">
+        <h3 className="text-lg sm:text-xl font-semibold text-[var(--navy-blue)] mb-4">Projects per Quarter</h3>
+        <ResponsiveContainer width="100%" height={400}>
+          <LineChart data={projectsPerQuarterData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+              <XAxis 
+                dataKey="quarter" 
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
+              />
+              <YAxis 
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'var(--white)', 
+                  border: '1px solid var(--chart-grid)',
+                borderRadius: '8px'
+              }}
+              labelStyle={{ fontWeight: 'bold' }}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="count" 
+              stroke="var(--navy-blue)" 
+              strokeWidth={3}
+              dot={{ fill: 'var(--navy-blue)', r: 5, strokeWidth: 2, stroke: 'var(--white)' }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+
       {/* Projects Database Table */}
-      <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-lg p-8 shadow-md">
-        <h3 className="text-2xl font-semibold text-slate-900 mb-6">Projects Database</h3>
+      <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-6 shadow-md overflow-x-auto">
+        <h3 className="text-lg sm:text-xl font-semibold text-[var(--navy-blue)] mb-4">Projects Database</h3>
         
         {/* Search Box */}
         <div className="mb-6">
@@ -524,33 +516,33 @@ export default function Home() {
             placeholder="Search projects..."
             value={projectSearchQuery}
             onChange={(e) => setProjectSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--navy-blue)] focus:border-transparent"
           />
         </div>
         
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gradient-to-r from-blue-100 to-indigo-100">
+            <thead className="bg-[var(--navy-blue-light)]">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-medium text-blue-900 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Company
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-blue-900 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Quarter
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-blue-900 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   PM
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-blue-900 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Track
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-blue-900 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-blue-900 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Donated
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-blue-900 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Description
                 </th>
               </tr>
@@ -570,7 +562,7 @@ export default function Home() {
                 </tr>
               ) : (
                 (showAllProjects ? searchFilteredProjects : searchFilteredProjects.slice(0, 20)).map((project) => (
-                  <tr key={project.project_id} className="hover:bg-blue-50 transition-colors">
+                  <tr key={project.project_id} className="hover:bg-[var(--navy-blue-light)] transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {project.company_id !== undefined ? (companyMap.get(project.company_id) || 'Unknown') : 'Unknown'}
                     </td>
@@ -623,7 +615,7 @@ export default function Home() {
           <div className="mt-6 text-center">
             <button
               onClick={() => setShowAllProjects(!showAllProjects)}
-              className="px-6 py-3 text-base font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:shadow-lg transition-all"
+              className="px-6 py-3 text-base cursor-pointer font-semibold bg-[var(--navy-blue)] text-white rounded-lg hover:shadow-lg transition-all"
             >
               {showAllProjects ? 'Show Less' : `Show All (${searchFilteredProjects.length} projects)`}
             </button>
@@ -635,178 +627,76 @@ export default function Home() {
 
   const renderMembersTab = () => (
     <>
-      {/* KPI Cards */}
-      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-8 shadow-md mb-8">
-        <div className="text-2xl font-semibold text-emerald-900 uppercase tracking-wide mb-6">
-          Overview
+      {/* Compact KPI Cards - Top Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full min-h-[110px]">
+          <div className="text-xs font-semibold text-[var(--navy-blue-medium)] uppercase tracking-wide">
+            Current Members
+          </div>
+          <div className="text-3xl font-bold text-gray-900 mt-auto">
+            {loading ? "..." : activeMembers + inactiveMembers}
+          </div>
         </div>
-        <div className="grid grid-cols-4 gap-8">
-          <div className="bg-white border-l-4 border-emerald-500 rounded-lg p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-sm font-semibold text-emerald-600 uppercase tracking-wide mb-3">
-              Current Members
-            </div>
-            <div className="text-4xl font-bold text-gray-900">
-              {loading ? "..." : activeMembers + inactiveMembers}
-            </div>
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full min-h-[110px]">
+          <div className="text-xs font-semibold text-[var(--navy-blue-medium)] uppercase tracking-wide">
+            Active
           </div>
-          <div className="bg-white border-l-4 border-teal-500 rounded-lg p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-sm font-semibold text-teal-600 uppercase tracking-wide mb-3">
-              Active
-            </div>
-            <div className="text-4xl font-bold text-gray-900">
-              {loading ? "..." : activeMembers}
-            </div>
+          <div className="text-3xl font-bold text-gray-900 mt-auto">
+            {loading ? "..." : activeMembers}
           </div>
-          <div className="bg-white border-l-4 border-emerald-500 rounded-lg p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-sm font-semibold text-emerald-600 uppercase tracking-wide mb-3">
-              Inactive
-            </div>
-            <div className="text-4xl font-bold text-gray-900">
-              {loading ? "..." : inactiveMembers}
-            </div>
+        </div>
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full min-h-[110px]">
+          <div className="text-xs font-semibold text-[var(--navy-blue-medium)] uppercase tracking-wide">
+            Inactive
           </div>
-          <div className="bg-white border-l-4 border-teal-500 rounded-lg p-8 shadow-sm hover:shadow-md transition-shadow">
-            <div className="text-sm font-semibold text-teal-600 uppercase tracking-wide mb-3">
-              Total Lifetime Members
-            </div>
-            <div className="text-4xl font-bold text-gray-900">
-              {loading ? "..." : totalLifetimeMembers}
-            </div>
+          <div className="text-3xl font-bold text-gray-900 mt-auto">
+            {loading ? "..." : inactiveMembers}
+          </div>
+        </div>
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full min-h-[110px]">
+          <div className="text-xs font-semibold text-[var(--navy-blue-medium)] uppercase tracking-wide">
+            Lifetime Members
+          </div>
+          <div className="text-3xl font-bold text-gray-900 mt-auto">
+            {loading ? "..." : totalLifetimeMembers}
           </div>
         </div>
       </div>
 
-      {/* Charts Section - 2x2 Grid */}
-      <div className="grid grid-cols-2 gap-8 mb-8">
-        {/* Attendance per GBM */}
-        <div className="bg-gradient-to-br from-white to-emerald-50 border border-emerald-200 rounded-lg p-8 shadow-md">
-          <h3 className="text-2xl font-semibold text-emerald-900 mb-6">Attendance per GBM</h3>
-          <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={attendancePerGBMData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis 
-                dataKey="date" 
-                stroke="#1f2937"
-                tick={{ fill: '#1f2937', fontSize: 18 }}
-                angle={-45}
-                textAnchor="end"
-                height={80}
-              />
-              <YAxis 
-                stroke="#1f2937"
-                tick={{ fill: '#1f2937', fontSize: 18 }}
-              />
-              <Tooltip 
-                content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div style={{ 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
-                        padding: '10px'
-                      }}>
-                        <p style={{ margin: 0, fontWeight: 'bold' }}>{label}</p>
-                        <p style={{ margin: '5px 0 0 0', color: '#10B981' }}>
-                          count: {payload[0].value}
-                        </p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Bar dataKey="attendance" fill="#10B981" />
-              <Line 
-                type="monotone" 
-                dataKey="attendance" 
-                stroke="#059669" 
-                strokeWidth={3}
-                dot={{ fill: '#059669', r: 5, strokeWidth: 2, stroke: '#fff' }}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Members per Year */}
-        <div className="bg-gradient-to-br from-white to-teal-50 border border-teal-200 rounded-lg p-8 shadow-md">
-          <h3 className="text-2xl font-semibold text-teal-900 mb-6">New Members per Quarter</h3>
-          <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={membersPerQuarterData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis 
-                dataKey="quarter" 
-                stroke="#1f2937"
-                tick={{ fill: '#1f2937', fontSize: 18 }}
-              />
-              <YAxis 
-                stroke="#1f2937"
-                tick={{ fill: '#1f2937', fontSize: 18 }}
-              />
-              <Tooltip 
-                content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div style={{ 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #e2e8f0',
-                        borderRadius: '8px',
-                        padding: '10px'
-                      }}>
-                        <p style={{ margin: 0, fontWeight: 'bold' }}>{label}</p>
-                        <p style={{ margin: '5px 0 0 0', color: '#14B8A6' }}>
-                          count: {payload[0].value}
-                        </p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Bar dataKey="count" fill="#14B8A6" />
-              <Line 
-                type="monotone" 
-                dataKey="count" 
-                stroke="#0D9488" 
-                strokeWidth={3}
-                dot={{ fill: '#0D9488', r: 5, strokeWidth: 2, stroke: '#fff' }}
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
-
+      {/* Charts Section - Reordered */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Tech vs Business */}
-        <div className="bg-gradient-to-br from-white to-emerald-50 border border-emerald-200 rounded-lg p-8 shadow-md">
-          <h3 className="text-2xl font-semibold text-emerald-900 mb-6">Tech vs Business</h3>
-          <ResponsiveContainer width="100%" height={400}>
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-6 shadow-md">
+          <h3 className="text-lg sm:text-xl font-semibold text-[var(--navy-blue)] mb-4">Tech vs Business</h3>
+          <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
             <BarChart 
               data={techNonTechData}
               layout="vertical"
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
               <XAxis 
                 type="number"
-                stroke="#1f2937"
-                tick={{ fill: '#1f2937', fontSize: 18 }}
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
               />
               <YAxis 
                 type="category"
                 dataKey="category"
-                width={120}
-                stroke="#1f2937"
-                tick={{ fill: '#1f2937', fontSize: 18 }}
+                width={100}
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
               />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #e2e8f0',
+                  backgroundColor: 'var(--white)', 
+                  border: '1px solid var(--chart-grid)',
                   borderRadius: '8px'
                 }}
                 labelStyle={{ fontWeight: 'bold' }}
               />
               <Bar 
                 dataKey="count" 
-                fill="#10B981"
+                fill="var(--navy-blue-medium)"
                 radius={[0, 4, 4, 0]}
               />
             </BarChart>
@@ -814,37 +704,37 @@ export default function Home() {
         </div>
 
         {/* Associates vs Analysts */}
-        <div className="bg-gradient-to-br from-white to-teal-50 border border-teal-200 rounded-lg p-8 shadow-md">
-          <h3 className="text-2xl font-semibold text-teal-900 mb-6">Associates vs Analysts</h3>
-          <ResponsiveContainer width="100%" height={400}>
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-6 shadow-md">
+          <h3 className="text-lg sm:text-xl font-semibold text-[var(--navy-blue)] mb-4">Associates vs Analysts</h3>
+          <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
             <BarChart 
               data={associatesAnalystsData}
               layout="vertical"
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
               <XAxis 
                 type="number"
-                stroke="#1f2937"
-                tick={{ fill: '#1f2937', fontSize: 18 }}
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
               />
               <YAxis 
                 type="category"
                 dataKey="category"
-                width={120}
-                stroke="#1f2937"
-                tick={{ fill: '#1f2937', fontSize: 18 }}
+                width={100}
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
               />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #e2e8f0',
+                  backgroundColor: 'var(--white)', 
+                  border: '1px solid var(--chart-grid)',
                   borderRadius: '8px'
                 }}
                 labelStyle={{ fontWeight: 'bold' }}
               />
               <Bar 
                 dataKey="count" 
-                fill="#14B8A6"
+                fill="var(--navy-blue-medium)"
                 radius={[0, 4, 4, 0]}
               />
             </BarChart>
@@ -852,15 +742,115 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Full Width Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Attendance per GBM */}
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-6 shadow-md">
+          <h3 className="text-lg sm:text-xl font-semibold text-[var(--navy-blue)] mb-4">Attendance per GBM</h3>
+          <ResponsiveContainer width="100%" height={250} className="sm:h-[350px]">
+            <ComposedChart data={attendancePerGBMData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+              <XAxis 
+                dataKey="date" 
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 12 }}
+                angle={-45}
+                textAnchor="end"
+                height={80}
+              />
+              <YAxis 
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
+              />
+              <Tooltip 
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div style={{ 
+                  backgroundColor: 'var(--white)', 
+                  border: '1px solid var(--chart-grid)',
+                        borderRadius: '8px',
+                        padding: '10px'
+                      }}>
+                        <p style={{ margin: 0, fontWeight: 'bold' }}>{label}</p>
+                        <p style={{ margin: '5px 0 0 0', color: 'var(--navy-blue)' }}>
+                          count: {payload[0].value}
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar dataKey="attendance" fill="var(--navy-blue-medium)" />
+              <Line 
+                type="monotone" 
+                dataKey="attendance" 
+                stroke="var(--navy-blue)" 
+                strokeWidth={3}
+                dot={{ fill: 'var(--navy-blue)', r: 5, strokeWidth: 2, stroke: 'var(--white)' }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Members per Quarter */}
+        <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-6 shadow-md">
+          <h3 className="text-lg sm:text-xl font-semibold text-[var(--navy-blue)] mb-4">New Members per Quarter</h3>
+          <ResponsiveContainer width="100%" height={250} className="sm:h-[350px]">
+            <ComposedChart data={membersPerQuarterData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+              <XAxis 
+                dataKey="quarter" 
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
+              />
+              <YAxis 
+                stroke="var(--chart-axis)"
+                tick={{ fill: 'var(--chart-axis)', fontSize: 14 }}
+              />
+              <Tooltip 
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div style={{ 
+                  backgroundColor: 'var(--white)', 
+                  border: '1px solid var(--chart-grid)',
+                        borderRadius: '8px',
+                        padding: '10px'
+                      }}>
+                        <p style={{ margin: 0, fontWeight: 'bold' }}>{label}</p>
+                        <p style={{ margin: '5px 0 0 0', color: 'var(--navy-blue)' }}>
+                          count: {payload[0].value}
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar dataKey="count" fill="var(--navy-blue-medium)" />
+              <Line 
+                type="monotone" 
+                dataKey="count" 
+                stroke="var(--navy-blue)" 
+                strokeWidth={3}
+                dot={{ fill: 'var(--navy-blue)', r: 5, strokeWidth: 2, stroke: 'var(--white)' }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
       {/* Members Database Table */}
-      <div className="bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-lg p-8 shadow-md">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-semibold text-slate-900">
+      <div className="bg-white border border-[var(--navy-blue-medium)] rounded-lg p-4 sm:p-6 shadow-md overflow-x-auto">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <h3 className="text-lg sm:text-xl font-semibold text-[var(--navy-blue)]">
             {showAttendance ? 'GBM Attendance Tracking' : 'Members Database'}
           </h3>
           <button
             onClick={() => setShowAttendance(!showAttendance)}
-            className="px-6 py-3 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:shadow-lg transition-all"
+            className="px-6 py-3 text-base font-semibold bg-[var(--navy-blue)] text-white rounded-lg hover:shadow-lg transition-all"
           >
             {showAttendance ? 'Show Member Data' : 'Show Attendance'}
           </button>
@@ -873,7 +863,7 @@ export default function Home() {
             placeholder={showAttendance ? "Search members..." : "Search members..."}
             value={memberSearchQuery}
             onChange={(e) => setMemberSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            className="w-full px-4 py-3 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--navy-blue)] focus:border-transparent"
           />
         </div>
         
@@ -881,30 +871,30 @@ export default function Home() {
           <>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gradient-to-r from-emerald-100 to-teal-100">
+                <thead className="bg-[var(--navy-blue-light)]">
               <tr>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Name
                 </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Quarter Entered
                 </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Quarter Graduating
                 </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Role
                 </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Track
                 </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   UCSD Email
                 </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Personal Email
                 </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                   Status
                 </th>
               </tr>
@@ -924,7 +914,7 @@ export default function Home() {
                 </tr>
               ) : (
                     (showAllMembers ? searchFilteredMembers : searchFilteredMembers.slice(0, 20)).map((member) => (
-                      <tr key={member.member_id} className="hover:bg-emerald-50 transition-colors">
+                      <tr key={member.member_id} className="hover:bg-[var(--navy-blue-light)] transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">
                       {member.name || 'N/A'}
                     </td>
@@ -967,7 +957,7 @@ export default function Home() {
               <div className="mt-6 text-center">
                 <button
                   onClick={() => setShowAllMembers(!showAllMembers)}
-                  className="px-6 py-3 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:shadow-lg transition-all"
+                  className="px-6 py-3 text-base font-montserrat bg-[var(--navy-blue)] text-white rounded-lg hover:shadow-lg transition-all"
                 >
                   {showAllMembers ? 'Show Less' : `Show All (${searchFilteredMembers.length} members)`}
                 </button>
@@ -978,9 +968,9 @@ export default function Home() {
           <>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gradient-to-r from-emerald-100 to-teal-100">
+                <thead className="bg-[var(--navy-blue-light)]">
                   <tr>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-emerald-900 uppercase tracking-wider sticky left-0 bg-gradient-to-r from-emerald-100 to-teal-100">
+                    <th className="px-6 py-4 text-left text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider sticky left-0 bg-[var(--navy-blue-light)]">
                       Member Name
                     </th>
                     {sortedGBMsForHeaders.map(gbm => {
@@ -994,12 +984,12 @@ export default function Home() {
                         }
                       }
                       return (
-                        <th key={gbm.gbm_id} className="px-6 py-4 text-center text-sm font-medium text-emerald-900 uppercase tracking-wider whitespace-nowrap">
+                        <th key={gbm.gbm_id} className="px-6 py-4 text-center text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider whitespace-nowrap">
                           {formattedDate}
                         </th>
                       );
                     })}
-                    <th className="px-6 py-4 text-center text-sm font-medium text-emerald-900 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-center text-sm font-medium text-[var(--navy-blue)] uppercase tracking-wider">
                       Total Attended
                     </th>
                   </tr>
@@ -1019,7 +1009,7 @@ export default function Home() {
                     </tr>
                   ) : (
                     (showAllAttendance ? searchFilteredAttendanceMatrix : searchFilteredAttendanceMatrix.slice(0, 20)).map((row) => (
-                      <tr key={row.member.member_id} className="hover:bg-emerald-50 transition-colors">
+                      <tr key={row.member.member_id} className="hover:bg-[var(--navy-blue-light)] transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900 font-medium sticky left-0 bg-white">
                           {row.member.name || 'Unknown'}
                         </td>
@@ -1047,7 +1037,7 @@ export default function Home() {
               <div className="mt-6 text-center">
                 <button
                   onClick={() => setShowAllAttendance(!showAllAttendance)}
-                  className="px-6 py-3 text-base font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg hover:shadow-lg transition-all"
+                  className="px-6 py-3 text-base font-semibold bg-[var(--navy-blue)] text-white rounded-lg hover:shadow-lg transition-all"
                 >
                   {showAllAttendance ? 'Show Less' : `Show All (${searchFilteredAttendanceMatrix.length} members)`}
                 </button>
@@ -1060,17 +1050,44 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-[80%] mx-auto px-8 py-8">
+    <div className="min-h-screen bg-[var(--cream)] overflow-x-hidden">
+      <div className="w-full max-w-full sm:max-w-[90%] md:max-w-[80%] mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-6 mb-2">
-            <Image src="/logo.png" alt="TCG Logo" width={120} height={120} className="object-contain" />
-            <h1 className="text-5xl font-bold text-gray-900">TCG Dashboard</h1>
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-4 sm:gap-0 mb-4 sm:mb-6">
+            <div className="flex items-center justify-center gap-4 sm:gap-6 flex-shrink-0">
+              <Image src="/logo.png" alt="TCG Logo" width={120} height={120} className="object-contain w-20 h-20 sm:w-[120px] sm:h-[120px]" />
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-montserrat text-[var(--navy-blue)]">KPI Dashboard</h1>
+            </div>
+            
+            {/* Tabs Navigation - Integrated into Header */}
+            <div className="bg-[var(--navy-blue-light)] rounded-lg p-1 inline-flex gap-1">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab;
+                
+                let buttonClasses = "px-6 py-2.5 rounded-md cursor-pointer text-base font-semibold transition-all duration-200 ";
+                
+                if (isActive) {
+                  buttonClasses += "bg-[var(--navy-blue)] text-white shadow-lg";
+                } else {
+                  buttonClasses += "bg-[var(--navy-blue-light)] text-[var(--navy-blue)] hover:bg-[var(--navy-blue-medium)] hover:text-white";
+                }
+                
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={buttonClasses}
+                  >
+                    {tab}
+                  </button>
+                );
+              })}
+            </div>
           </div>
           {loading && (
             <div className="text-base text-gray-500 flex items-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-2"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[var(--navy-blue)] mr-2"></div>
               Loading data...
             </div>
           )}
@@ -1081,36 +1098,6 @@ export default function Home() {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Tabs Navigation */}
-        <div className="bg-gray-100 rounded-lg p-2 mb-8 inline-flex gap-2">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab;
-            const isProjects = tab === "Projects";
-            
-            let buttonClasses = "px-8 py-4 rounded-md cursor-pointer text-xl font-bold transition-all ";
-            
-            if (isActive) {
-              buttonClasses += isProjects 
-                ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg"
-                : "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg";
-            } else {
-              buttonClasses += isProjects
-                ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                : "bg-emerald-100 text-emerald-700 hover:bg-emerald-200";
-            }
-            
-            return (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-                className={buttonClasses}
-            >
-              {tab}
-            </button>
-            );
-          })}
         </div>
 
         {/* Tab Content */}

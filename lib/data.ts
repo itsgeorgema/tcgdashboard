@@ -448,7 +448,7 @@ export function getProjectManagers(assignments: Assignment[], projects: Project[
   // Create a set of valid project IDs
   const projectIds = new Set(projects.map(p => p.project_id))
   
-  // Debug logging
+  /*// Debug logging
   console.log('getProjectManagers debug:', {
     totalAssignments: assignments.length,
     totalMembers: members.length,
@@ -457,7 +457,7 @@ export function getProjectManagers(assignments: Assignment[], projects: Project[
     sampleAssignment: assignments[0],
     sampleMember: members[0],
     sampleProject: projects[0]
-  })
+  })*/
   
   // Iterate through assignments and find project managers
   assignments.forEach(assignment => {
@@ -485,8 +485,8 @@ export function getProjectManagers(assignments: Assignment[], projects: Project[
     }
   })
   
-  console.log('Total PMs found:', managerMap.size)
-  console.log('PM Map:', Array.from(managerMap.entries()))
+  /*console.log('Total PMs found:', managerMap.size)
+  console.log('PM Map:', Array.from(managerMap.entries()))*/
   
   return managerMap
 }

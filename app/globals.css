@@ -1,26 +1,146 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Navy Blue Palette */
+  --navy-blue: #1e3a5f;
+  --navy-blue-dark: #0f1f35;
+  --navy-blue-medium: #4a6fa5;
+  --navy-blue-light: #e8ecf0;
+  --navy-blue-lighter: #f5f7fa;
+  
+  /* Cream Palette */
+  --cream: #faf8f3;
+  --cream-light: #fefcf8;
+  
+  /* Background and Foreground */
+  --background: #faf8f3;
+  --foreground: #1e3a5f;
+  
+  /* Chart Colors */
+  --chart-grid: #e2e8f0;
+  --chart-axis: #1f2937;
+  --chart-axis-light: #64748b;
+  --chart-white: #ffffff;
+  
+  /* UI Colors */
+  --white: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-navy-blue: var(--navy-blue);
+  --color-navy-blue-dark: var(--navy-blue-dark);
+  --color-navy-blue-medium: var(--navy-blue-medium);
+  --color-navy-blue-light: var(--navy-blue-light);
+  --color-navy-blue-lighter: var(--navy-blue-lighter);
+  --color-cream: var(--cream);
+  --color-cream-light: var(--cream-light);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-axis: var(--chart-axis);
+  --color-chart-axis-light: var(--chart-axis-light);
+  --color-white: var(--white);
+  --font-sans: var(--font-anonymous-pro);
+  --font-heading: var(--font-montserrat);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-anonymous-pro), monospace;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-montserrat), sans-serif;
+}
+
+/* Disable focus outlines and click highlights on visualizations */
+svg:focus,
+svg:focus-visible,
+svg:active,
+.recharts-wrapper:focus,
+.recharts-wrapper:focus-visible,
+.recharts-wrapper:active,
+.recharts-surface:focus,
+.recharts-surface:focus-visible,
+.recharts-surface:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Prevent blue borders on chart containers */
+[class*="border-[var(--navy-blue-medium)]"]:focus,
+[class*="border-[var(--navy-blue-medium)]"]:focus-visible,
+[class*="border-[var(--navy-blue-medium)]"]:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Disable focus and selection on chart bars and elements */
+.recharts-bar,
+.recharts-bar-rectangle,
+.recharts-bar-rectangles,
+.recharts-line,
+.recharts-line-dot,
+.recharts-line-dots,
+.recharts-active-shape,
+.recharts-active-bar,
+.recharts-active-dot,
+.recharts-reference-line,
+.recharts-reference-area {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  outline: none !important;
+  pointer-events: none !important;
+}
+
+/* Disable pointer events on all chart SVG elements */
+.recharts-wrapper svg,
+.recharts-wrapper svg * {
+  pointer-events: none !important;
+}
+
+/* Re-enable pointer events only for tooltip */
+.recharts-tooltip-wrapper,
+.recharts-tooltip-wrapper * {
+  pointer-events: auto !important;
+}
+
+/* Prevent focus outlines on chart elements */
+.recharts-bar:focus,
+.recharts-bar:focus-visible,
+.recharts-bar:active,
+.recharts-bar-rectangle:focus,
+.recharts-bar-rectangle:focus-visible,
+.recharts-bar-rectangle:active,
+.recharts-line:focus,
+.recharts-line:focus-visible,
+.recharts-line:active,
+.recharts-active-shape:focus,
+.recharts-active-shape:focus-visible,
+.recharts-active-shape:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Prevent any border/outline on clicked chart elements */
+.recharts-bar-rectangles rect:focus,
+.recharts-bar-rectangles rect:focus-visible,
+.recharts-bar-rectangles rect:active {
+  outline: none !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
 }
