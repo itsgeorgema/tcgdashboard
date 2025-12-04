@@ -150,14 +150,14 @@ export default function MembersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--cream)]">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Members Dashboard</h1>
+          <h1 className="text-4xl font-bold text-[var(--navy-blue)] mb-2">Members Dashboard</h1>
           {loading && (
             <div className="text-sm text-gray-500 flex items-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[var(--navy-blue)] mr-2"></div>
               Loading data...
             </div>
           )}
@@ -196,36 +196,36 @@ export default function MembersPage() {
         <div className="grid grid-cols-2 gap-6 mb-8">
           {/* Attendance per GBM */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Attendance per GBM</h3>
+            <h3 className="text-lg font-semibold text-[var(--navy-blue)] mb-4">Attendance per GBM</h3>
             <ResponsiveContainer width="100%" height={300}>
               <ComposedChart data={attendancePerGBMData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                 <XAxis 
                   dataKey="date" 
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b', fontSize: 12 }}
+                  stroke="var(--chart-axis-light)"
+                  tick={{ fill: 'var(--chart-axis-light)', fontSize: 12 }}
                   angle={-45}
                   textAnchor="end"
                   height={80}
                 />
                 <YAxis 
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b' }}
+                  stroke="var(--chart-axis-light)"
+                  tick={{ fill: 'var(--chart-axis-light)' }}
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#fff', 
-                    border: '1px solid #e2e8f0',
+                    backgroundColor: 'var(--white)', 
+                    border: '1px solid var(--chart-grid)',
                     borderRadius: '8px'
                   }}
                 />
-                <Bar dataKey="attendance" fill="#2563eb" />
+                <Bar dataKey="attendance" fill="var(--navy-blue-medium)" />
                 <Line 
                   type="monotone" 
                   dataKey="attendance" 
-                  stroke="#8b5cf6" 
+                  stroke="var(--navy-blue)" 
                   strokeWidth={2}
-                  dot={{ fill: '#8b5cf6', r: 4 }}
+                  dot={{ fill: 'var(--navy-blue)', r: 4 }}
                 />
               </ComposedChart>
             </ResponsiveContainer>
@@ -233,33 +233,33 @@ export default function MembersPage() {
 
           {/* Members per Quarter */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Members per Quarter</h3>
+            <h3 className="text-lg font-semibold text-[var(--navy-blue)] mb-4">Members per Quarter</h3>
             <ResponsiveContainer width="100%" height={300}>
               <ComposedChart data={membersPerQuarterData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                 <XAxis 
                   dataKey="quarter" 
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b' }}
+                  stroke="var(--chart-axis-light)"
+                  tick={{ fill: 'var(--chart-axis-light)' }}
                 />
                 <YAxis 
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b' }}
+                  stroke="var(--chart-axis-light)"
+                  tick={{ fill: 'var(--chart-axis-light)' }}
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#fff', 
-                    border: '1px solid #e2e8f0',
+                    backgroundColor: 'var(--white)', 
+                    border: '1px solid var(--chart-grid)',
                     borderRadius: '8px'
                   }}
                 />
-                <Bar dataKey="count" fill="#2563eb" />
+                <Bar dataKey="count" fill="var(--navy-blue-medium)" />
                 <Line 
                   type="monotone" 
                   dataKey="count" 
-                  stroke="#8b5cf6" 
+                  stroke="var(--navy-blue)" 
                   strokeWidth={2}
-                  dot={{ fill: '#8b5cf6', r: 4 }}
+                  dot={{ fill: 'var(--navy-blue)', r: 4 }}
                 />
               </ComposedChart>
             </ResponsiveContainer>
@@ -267,34 +267,34 @@ export default function MembersPage() {
 
           {/* Tech vs Non-Tech */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Tech vs Non-Tech</h3>
+            <h3 className="text-lg font-semibold text-[var(--navy-blue)] mb-4">Tech vs Non-Tech</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart 
                 data={techNonTechData}
                 layout="vertical"
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                 <XAxis 
                   type="number"
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b' }}
+                  stroke="var(--chart-axis-light)"
+                  tick={{ fill: 'var(--chart-axis-light)' }}
                 />
                 <YAxis 
                   type="category"
                   dataKey="category"
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b' }}
+                  stroke="var(--chart-axis-light)"
+                  tick={{ fill: 'var(--chart-axis-light)' }}
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#fff', 
-                    border: '1px solid #e2e8f0',
+                    backgroundColor: 'var(--white)', 
+                    border: '1px solid var(--chart-grid)',
                     borderRadius: '8px'
                   }}
                 />
                 <Bar 
                   dataKey="count" 
-                  fill="#8b5cf6"
+                  fill="var(--navy-blue-medium)"
                   radius={[0, 4, 4, 0]}
                 />
               </BarChart>
@@ -303,34 +303,34 @@ export default function MembersPage() {
 
           {/* Associates vs Analysts */}
           <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Associates vs Analysts</h3>
+            <h3 className="text-lg font-semibold text-[var(--navy-blue)] mb-4">Associates vs Analysts</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart 
                 data={associatesAnalystsData}
                 layout="vertical"
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                 <XAxis 
                   type="number"
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b' }}
+                  stroke="var(--chart-axis-light)"
+                  tick={{ fill: 'var(--chart-axis-light)' }}
                 />
                 <YAxis 
                   type="category"
                   dataKey="category"
-                  stroke="#64748b"
-                  tick={{ fill: '#64748b' }}
+                  stroke="var(--chart-axis-light)"
+                  tick={{ fill: 'var(--chart-axis-light)' }}
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#fff', 
-                    border: '1px solid #e2e8f0',
+                    backgroundColor: 'var(--white)', 
+                    border: '1px solid var(--chart-grid)',
                     borderRadius: '8px'
                   }}
                 />
                 <Bar 
                   dataKey="count" 
-                  fill="#8b5cf6"
+                  fill="var(--navy-blue-medium)"
                   radius={[0, 4, 4, 0]}
                 />
               </BarChart>
@@ -340,7 +340,7 @@ export default function MembersPage() {
 
         {/* Members Database Table */}
         <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">s
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Members Database</h3>
+          <h3 className="text-lg font-semibold text-[var(--navy-blue)] mb-4">Members Database</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
