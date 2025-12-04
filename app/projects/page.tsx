@@ -274,6 +274,7 @@ export default function ProjectsPage() {
                     width={120}
                     stroke="var(--chart-axis-light)"
                     tick={{ fill: 'var(--chart-axis-light)', fontSize: 12 }}
+                    interval={0}
                   />
                   <Tooltip 
                     contentStyle={{ 
@@ -311,6 +312,7 @@ export default function ProjectsPage() {
                     width={120}
                     stroke="var(--chart-axis-light)"
                     tick={{ fill: 'var(--chart-axis-light)', fontSize: 12 }}
+                    interval={0}
                   />
                   <Tooltip 
                     contentStyle={{ 

@@ -284,6 +284,7 @@ export default function MembersPage() {
                   dataKey="category"
                   stroke="var(--chart-axis-light)"
                   tick={{ fill: 'var(--chart-axis-light)' }}
+                  interval={0}
                 />
                 <Tooltip 
                   contentStyle={{ 
@@ -320,6 +321,7 @@ export default function MembersPage() {
                   dataKey="category"
                   stroke="var(--chart-axis-light)"
                   tick={{ fill: 'var(--chart-axis-light)' }}
+                  interval={0}
                 />
                 <Tooltip 
                   contentStyle={{ 
